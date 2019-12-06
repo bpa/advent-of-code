@@ -1,0 +1,12 @@
+[package]
+name = "advent-of-code"
+version = "0.1.0"
+authors = ["Bruce Armstrong <bruce@fortressofgeekdom.org>"]
+
+[lib]
+bench = false
+
+[dependencies]
+rust-crypto = "0.2.36"
+aoc-runner = "0.2.0"
+aoc-runner-derive = "0.2.0"
