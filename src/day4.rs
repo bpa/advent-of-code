@@ -2,6 +2,18 @@ use std::str;
 
 #[aoc(day4, part1)]
 pub fn valid_passwords(input: &str) -> usize {
+    count_passwords(input, has_repeated)
+}
+
+#[aoc(day4, part2)]
+pub fn valid_passwords_part2(input: &str) -> usize {
+    count_passwords(input, has_double)
+}
+
+pub fn count_passwords<F>(input: &str, is_valid: F) -> usize
+where
+    F: Fn(&Vec<usize>) -> bool,
+{
     let mut valid: usize = 0;
     // Use one less to remove initial case in loop
     let mut digits = get_digits(input[0..6].parse::<usize>().unwrap() - 1);
@@ -13,7 +25,7 @@ pub fn valid_passwords(input: &str) -> usize {
         if digits > max {
             break;
         }
-        if has_double(&digits) {
+        if is_valid(&digits) {
             valid += 1;
         }
     }
@@ -51,6 +63,23 @@ fn make_increasing(digits: &mut Vec<usize>) {
 }
 
 fn has_double(digits: &Vec<usize>) -> bool {
+    let mut count = 0;
+    let mut last = digits[0];
+    for i in 1..digits.len() {
+        if digits[i] == last {
+            count = count + 1;
+        } else {
+            if count == 1 {
+                return true;
+            }
+            count = 0;
+            last = digits[i];
+        }
+    }
+    count == 1
+}
+
+fn has_repeated(digits: &Vec<usize>) -> bool {
     digits
         .windows(2)
         .fold(false, |acc, pair| acc || pair[0] == pair[1])
@@ -106,7 +135,17 @@ mod test {
     fn test_doubles() {
         assert_eq!(has_double(&vec![1, 2, 3]), false);
         assert_eq!(has_double(&vec![1, 2, 2]), true);
-        assert_eq!(has_double(&vec![1, 1, 2]), true);
-        assert_eq!(has_double(&vec![1, 2, 1]), false);
+        assert_eq!(has_double(&vec![2, 2, 2]), false);
+        assert_eq!(has_double(&vec![1, 1, 1, 1, 2, 2]), true);
+        assert_eq!(has_double(&vec![1, 1, 2, 2, 3, 3]), true);
+        assert_eq!(has_double(&vec![1, 1, 1, 2, 2, 3]), true);
+    }
+
+    #[test]
+    fn test_repeated() {
+        assert_eq!(has_repeated(&vec![1, 2, 3]), false);
+        assert_eq!(has_repeated(&vec![1, 2, 2]), true);
+        assert_eq!(has_repeated(&vec![1, 1, 2]), true);
+        assert_eq!(has_repeated(&vec![1, 2, 1]), false);
     }
 }
