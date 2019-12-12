@@ -6,10 +6,17 @@ fn read_memory(input: &str) -> Result<Vec<isize>, ParseIntError> {
 }
 
 #[aoc(day5, part1)]
-pub fn run_12_2(m: &Vec<isize>) -> isize {
+pub fn run_system_1(m: &Vec<isize>) -> isize {
     let code = m.clone();
 
     run(code, vec![1])
+}
+
+#[aoc(day5, part2)]
+pub fn run_system_5(m: &Vec<isize>) -> isize {
+    let code = m.clone();
+
+    run(code, vec![5])
 }
 
 //This is me abusing macros to learn the ins and outs
@@ -55,6 +62,23 @@ macro_rules! init_registers {
                 i = i + 2;
             }};
         }
+        macro_rules! opcode3 {
+            ( $action3:expr ) => {{
+                let n = get!(1);
+                let a = get!(2);
+                macro_rules! noun {
+                    () => {
+                        $m[n]
+                    };
+                }
+                macro_rules! addr {
+                    () => {
+                        $m[a]
+                    };
+                }
+                $action3;
+            }};
+        }
         macro_rules! opcode4 {
             ( $action4:expr ) => {{
                 let n = get!(1);
@@ -91,6 +115,30 @@ fn run(mut m: Vec<isize>, input_data: Vec<isize>) -> isize {
             2 => opcode4!(addr!() = noun!() * verb!()),
             3 => opcode2!(addr!() = *input.next().expect("Ran out of input")),
             4 => opcode2!(println!("{}: {}", i!(), addr!())),
+            5 => opcode3!(
+                i!() = match noun!() {
+                    0 => i!() + 3,
+                    _ => addr!() as usize,
+                }
+            ),
+            6 => opcode3!(
+                i!() = match noun!() {
+                    0 => addr!() as usize,
+                    _ => i!() + 3,
+                }
+            ),
+            7 => opcode4!(
+                addr!() = match noun!() < verb!() {
+                    true => 1,
+                    false => 0,
+                }
+            ),
+            8 => opcode4!(
+                addr!() = match noun!() == verb!() {
+                    true => 1,
+                    false => 0,
+                }
+            ),
             99 => break,
             _ => panic!("Invalid instruction found"),
         }
