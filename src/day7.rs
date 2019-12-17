@@ -1,4 +1,7 @@
-use cpu::run;
+use cpu::Intcode;
+use std::cell::UnsafeCell;
+use std::collections::VecDeque;
+use std::iter::once;
 use std::num::ParseIntError;
 
 #[aoc_generator(day7)]
@@ -7,15 +10,14 @@ fn read_memory(input: &str) -> Result<Vec<isize>, ParseIntError> {
 }
 
 #[aoc(day7, part1)]
-pub fn run_system_1(m: &Vec<isize>) -> String {
-    let answer = Phase::new(5)
+pub fn max_thrust(m: &Vec<isize>) -> String {
+    let answer = Phase::new((0..5).collect())
         .map(|p| {
             let mut output: isize = 0;
             for phase in p {
-                let code = m.clone();
-                run(code, vec![phase as isize, output], &mut |_, val| {
-                    output = val
-                });
+                output = Intcode::new(m.clone(), &mut vec![phase as isize, output].into_iter())
+                    .last()
+                    .unwrap();
             }
             output
         })
@@ -24,29 +26,64 @@ pub fn run_system_1(m: &Vec<isize>) -> String {
     format!("{:?}", answer)
 }
 
+#[aoc(day7, part2)]
+pub fn max_thrust_with_feedback(m: &Vec<isize>) -> String {
+    let answer = Phase::new((5..10).collect())
+        .map(|p| output_value(m, &p))
+        .max()
+        .unwrap();
+    format!("{:?}", answer)
+}
+
+fn output_value(m: &Vec<isize>, phase: &[isize]) -> isize {
+    macro_rules! computer {
+        ( $name:ident = $phase:literal >> $input:ident ) => {
+            let mut chain = once(phase[$phase]).chain(&mut $input);
+            let mut $name = Intcode::new(m.clone(), &mut chain);
+        };
+    }
+    let input = UnsafeCell::new(Input::new(&[phase[0], 0]));
+    let mut one = Intcode::new(m.clone(), unsafe { &mut (*input.get()) });
+    computer!(two = 1 >> one);
+    computer!(three = 2 >> two);
+    computer!(four = 3 >> three);
+    computer!(five = 4 >> four);
+    let mut output: isize = 0;
+    loop {
+        match five.next() {
+            Some(value) => {
+                output = value;
+                unsafe { (*input.get()).0.push_front(output) };
+            }
+            None => return output,
+        }
+    }
+}
+
 #[derive(Debug)]
 struct Phase {
     n: usize,
-    curr: Vec<usize>,
+    curr: Vec<isize>,
     state: Vec<usize>,
     i: usize,
 }
 
 impl Phase {
-    fn new(count: usize) -> Self {
+    fn new(items: Vec<isize>) -> Self {
+        let size = items.len();
         Phase {
-            n: count,
-            curr: (0..count).collect(),
-            state: (0..count).map(|_| 0).collect(),
+            n: size,
+            curr: items,
+            state: (0..size).map(|_| 0).collect(),
             i: 0,
         }
     }
 }
 
 impl Iterator for Phase {
-    type Item = Vec<usize>;
+    type Item = Vec<isize>;
 
-    fn next(&mut self) -> Option<Vec<usize>> {
+    fn next(&mut self) -> Option<Vec<isize>> {
         if self.i >= self.n {
             return None;
         }
@@ -76,13 +113,32 @@ impl Iterator for Phase {
     }
 }
 
+struct Input(VecDeque<isize>);
+
+impl Input {
+    fn new(initial: &[isize]) -> Self {
+        let mut input = Input(VecDeque::new());
+        for val in initial {
+            input.0.push_front(*val);
+        }
+        input
+    }
+}
+
+impl Iterator for Input {
+    type Item = isize;
+    fn next(&mut self) -> Option<isize> {
+        self.0.pop_back()
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
 
     #[test]
     fn all_permutations() {
-        let mut p = Phase::new(3);
+        let mut p = Phase::new((0..3).collect());
         assert_eq!(Some(vec!(0, 1, 2)), p.next());
         assert_eq!(Some(vec!(1, 0, 2)), p.next());
         assert_eq!(Some(vec!(2, 0, 1)), p.next());

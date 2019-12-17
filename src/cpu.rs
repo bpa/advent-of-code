@@ -1,131 +1,94 @@
-//This is me abusing macros to learn the ins and outs
-macro_rules! init_registers {
-    ($m:ident) => {
-        let mut i: usize = 0;
-        let mut opcode: usize;
-        let mut mode = Vec::with_capacity(3);
-        macro_rules! i {
-            () => {
-                i
-            };
-        }
-        macro_rules! op {
-            () => {{
-                opcode = $m[i] as usize % 100;
-                let mut op: usize = $m[i] as usize / 100;
-                mode.clear();
-                for _ in 0..3 {
-                    mode.push(op % 10 == 1);
-                    op = op / 10;
-                }
-                opcode
-            }};
-        }
-        macro_rules! get {
-            ( $register:literal ) => {
-                match mode[$register - 1] {
-                    true => i + $register,
-                    false => $m[i + $register] as usize,
-                }
-            };
-        }
-        macro_rules! opcode2 {
-            ( $action2:expr ) => {{
-                let a = get!(1);
-                macro_rules! addr {
-                    () => {
-                        $m[a]
-                    };
-                }
-                $action2;
-                i = i + 2;
-            }};
-        }
-        macro_rules! opcode3 {
-            ( $action3:expr ) => {{
-                let n = get!(1);
-                let a = get!(2);
-                macro_rules! noun {
-                    () => {
-                        $m[n]
-                    };
-                }
-                macro_rules! addr {
-                    () => {
-                        $m[a]
-                    };
-                }
-                $action3;
-            }};
-        }
-        macro_rules! opcode4 {
-            ( $action4:expr ) => {{
-                let n = get!(1);
-                let v = get!(2);
-                let a = get!(3);
-                macro_rules! noun {
-                    () => {
-                        $m[n]
-                    };
-                }
-                macro_rules! verb {
-                    () => {
-                        $m[v]
-                    };
-                }
-                macro_rules! addr {
-                    () => {
-                        $m[a]
-                    };
-                }
-                $action4;
-                i = i + 4;
-            }};
-        }
-    };
+pub struct Intcode<'a> {
+    memory: Vec<isize>,
+    instruction_pointer: usize,
+    input: &'a mut dyn Iterator<Item = isize>,
 }
 
-pub fn run(
-    mut m: Vec<isize>,
-    input_data: Vec<isize>,
-    output: &mut dyn FnMut(usize, isize),
-) -> isize {
-    let mut input = input_data.iter();
-    init_registers!(m);
-    loop {
-        match op!() {
-            1 => opcode4!(addr!() = noun!() + verb!()),
-            2 => opcode4!(addr!() = noun!() * verb!()),
-            3 => opcode2!(addr!() = *input.next().expect("Ran out of input")),
-            4 => opcode2!(output(i!(), addr!())),
-            5 => opcode3!(
-                i!() = match noun!() {
-                    0 => i!() + 3,
-                    _ => addr!() as usize,
-                }
-            ),
-            6 => opcode3!(
-                i!() = match noun!() {
-                    0 => addr!() as usize,
-                    _ => i!() + 3,
-                }
-            ),
-            7 => opcode4!(
-                addr!() = match noun!() < verb!() {
-                    true => 1,
-                    false => 0,
-                }
-            ),
-            8 => opcode4!(
-                addr!() = match noun!() == verb!() {
-                    true => 1,
-                    false => 0,
-                }
-            ),
-            99 => break,
-            _ => panic!("Invalid instruction found"),
+impl<'a> Intcode<'a> {
+    pub fn new(memory: Vec<isize>, input: &'a mut dyn Iterator<Item = isize>) -> Self {
+        Intcode {
+            memory: memory,
+            instruction_pointer: 0usize,
+            input: input,
         }
     }
+}
 
-    m[0]
+impl<'a> Iterator for Intcode<'a> {
+    type Item = isize;
+    fn next(&mut self) -> Option<isize> {
+        loop {
+            let op = self.memory[self.instruction_pointer];
+            let opcode = op % 100;
+
+            let a = |register: usize| {
+                let place = match register {
+                    1 => 100,
+                    2 => 1000,
+                    3 => 10000,
+                    _ => 0,
+                };
+
+                let mode = (op / place) % 10;
+                match mode {
+                    0 => self.memory[self.instruction_pointer + register] as usize,
+                    1 => self.instruction_pointer + register,
+                    _ => panic!("Unknown addressing mode: {}", mode),
+                }
+            };
+
+            let v = |register: usize| self.memory[a(register)];
+            let i = self.instruction_pointer;
+
+            if opcode == 4 {
+                let out = v(1);
+                self.instruction_pointer = i + 2;
+                return Some(out);
+            }
+
+            self.instruction_pointer = match opcode {
+                1 => {
+                    let loc = a(3);
+                    self.memory[loc] = v(1) + v(2);
+                    i + 4
+                }
+                2 => {
+                    let loc = a(3);
+                    self.memory[loc] = v(1) * v(2);
+                    i + 4
+                }
+                3 => {
+                    let loc = a(1);
+                    self.memory[loc] = self.input.next().expect("Missing input");
+                    i + 2
+                }
+                5 => match v(1) {
+                    0 => i + 3,
+                    _ => v(2) as usize,
+                },
+                6 => match v(1) {
+                    0 => v(2) as usize,
+                    _ => i + 3,
+                },
+                7 => {
+                    let loc = a(3);
+                    match v(1) < v(2) {
+                        true => self.memory[loc] = 1,
+                        false => self.memory[loc] = 0,
+                    };
+                    i + 4
+                }
+                8 => {
+                    let loc = a(3);
+                    match v(1) == v(2) {
+                        true => self.memory[loc] = 1,
+                        false => self.memory[loc] = 0,
+                    };
+                    i + 4
+                }
+                99 => return None,
+                _ => panic!("Unsupported instruction {}", opcode),
+            }
+        }
+    }
 }
