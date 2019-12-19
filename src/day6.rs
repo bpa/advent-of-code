@@ -22,6 +22,33 @@ fn orbits(input: &[(String, String)]) -> usize {
     system.iter_mut().map(|s| s.num_routes()).sum()
 }
 
+#[aoc(day6, part2)]
+fn transfers(input: &[(String, String)]) -> usize {
+    let mut system = HashMap::new();
+
+    for orbit in input {
+        system.insert(&orbit.1, &orbit.0);
+    }
+
+    let mut path = HashMap::new();
+    let mut step = system.get(&String::from("SAN"));
+    while let Some(transfer) = step {
+        path.insert(transfer, path.len());
+        step = system.get(transfer);
+    }
+
+    step = system.get(&String::from("YOU"));
+    let mut steps: usize = 0;
+    while let Some(transfer) = step {
+        if let Some(junction) = path.get(transfer) {
+            return junction + steps;
+        }
+        step = system.get(transfer);
+        steps += 1;
+    }
+    0
+}
+
 fn create_graph(input: &[(String, String)]) -> Vec<Box<Node>> {
     let system: UnsafeCell<Vec<Box<Node>>> = UnsafeCell::new(Vec::new());
     let mut lookup: HashMap<&str, usize> = HashMap::new();
