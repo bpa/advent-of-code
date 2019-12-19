@@ -1,5 +1,5 @@
 [package]
-name = "advent-of-code"
+name = "advent_of_code"
 version = "0.1.0"
 authors = ["Bruce Armstrong <bruce@fortressofgeekdom.org>"]
 
@@ -12,3 +12,5 @@ aoc-runner = "0.3.0"
 aoc-runner-derive = "0.3.0"
 num = "0.2.0"
 nom = "5.0.1"
+pancurses = "0.16.1"
+

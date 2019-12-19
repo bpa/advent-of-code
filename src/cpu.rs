@@ -27,7 +27,10 @@ impl<'a> Intcode<'a> {
         let addr = match mode {
             0 => self.memory[self.instruction_pointer + register] as usize,
             1 => self.instruction_pointer + register,
-            2 => self.relative_base + self.memory[self.instruction_pointer + register] as usize,
+            2 => {
+                (self.relative_base as isize + self.memory[self.instruction_pointer + register])
+                    as usize
+            }
             _ => panic!("Unknown addressing mode: {}", mode),
         };
         if addr >= self.memory.len() {
@@ -108,7 +111,7 @@ impl<'a> Iterator for Intcode<'a> {
                     i + 4
                 }
                 9 => {
-                    self.relative_base += v!(1) as usize;
+                    self.relative_base = (self.relative_base as isize + v!(1)) as usize;
                     i + 2
                 }
                 99 => return None,
