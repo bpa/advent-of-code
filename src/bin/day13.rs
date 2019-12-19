@@ -29,15 +29,15 @@ pub fn main() {
                 if x == -1 && y == 0 {
                     score = game.next().unwrap();
                 } else {
-                    window.mvaddch(
+                    window.mvaddstr(
                         y as i32,
                         x as i32,
                         match game.next().unwrap() {
-                            1 => '|',
-                            2 => '-',
-                            3 => '=',
-                            4 => 'o',
-                            _ => ' ',
+                            1 => "|",
+                            2 => "-",
+                            3 => "=",
+                            4 => "❄",
+                            _ => " ",
                         },
                     );
                 }
