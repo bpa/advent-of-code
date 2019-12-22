@@ -3,6 +3,8 @@ extern crate pancurses;
 
 use advent_of_code::cpu::Intcode;
 use pancurses::Input;
+use std::cell::UnsafeCell;
+use std::cmp::Ordering;
 use std::fs::File;
 use std::io;
 use std::io::prelude::*;
@@ -20,7 +22,9 @@ pub fn main() {
     pancurses::noecho();
     pancurses::cbreak();
     pancurses::curs_set(0);
-    let mut joystick = Joystick(&window);
+    // let mut joystick = Joystick(&window);
+    let objects = UnsafeCell::new((0, 0));
+    let mut joystick = NoJoy(&objects);
     let mut game = Intcode::new(code, &mut joystick);
     loop {
         match game.next() {
@@ -35,8 +39,14 @@ pub fn main() {
                         match game.next().unwrap() {
                             1 => "|",
                             2 => "-",
-                            3 => "=",
-                            4 => "❄",
+                            3 => {
+                                unsafe { (*objects.get()).0 = x };
+                                "="
+                            }
+                            4 => {
+                                unsafe { (*objects.get()).1 = x };
+                                "o"
+                            }
                             _ => " ",
                         },
                     );
@@ -64,8 +74,8 @@ fn read_code() -> Result<Vec<isize>, io::Error> {
     Ok(mem)
 }
 
+// I tried playing this, but its way to hard to get to the end
 struct Joystick<'a>(&'a pancurses::Window);
-struct NoJoy();
 
 impl<'a> Iterator for Joystick<'a> {
     type Item = isize;
@@ -80,10 +90,21 @@ impl<'a> Iterator for Joystick<'a> {
         })
     }
 }
-impl Iterator for NoJoy {
+
+struct NoJoy<'a>(&'a UnsafeCell<(isize, isize)>);
+
+impl<'a> Iterator for NoJoy<'a> {
     type Item = isize;
 
     fn next(&mut self) -> Option<isize> {
-        Some(0)
+        thread::sleep(time::Duration::from_millis(20));
+        unsafe {
+            let o = *self.0.get();
+            Some(match o.0.cmp(&o.1) {
+                Ordering::Less => 1,
+                Ordering::Equal => 0,
+                Ordering::Greater => -1,
+            })
+        }
     }
 }
