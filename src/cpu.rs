@@ -1,3 +1,14 @@
+use std::cell::UnsafeCell;
+use std::collections::VecDeque;
+use std::rc::Rc;
+
+pub fn read_memory(input: &str) -> Vec<isize> {
+    input
+        .split(',')
+        .map(|num| num.parse::<isize>().unwrap())
+        .collect::<Vec<isize>>()
+}
+
 pub struct Intcode<'a> {
     memory: Vec<isize>,
     instruction_pointer: usize,
@@ -118,5 +129,43 @@ impl<'a> Iterator for Intcode<'a> {
                 _ => panic!("Unsupported instruction {}", opcode),
             }
         }
+    }
+}
+
+pub struct Input {
+    data: Rc<UnsafeCell<VecDeque<isize>>>,
+    iter: UnsafeCell<InputIter>,
+}
+
+struct InputIter(Rc<UnsafeCell<VecDeque<isize>>>);
+
+impl Input {
+    pub fn new(initial: &[isize]) -> Self {
+        let mut queue = VecDeque::new();
+        for val in initial {
+            queue.push_front(*val);
+        }
+        let data = Rc::new(UnsafeCell::new(queue));
+        Input {
+            data: data.clone(),
+            iter: UnsafeCell::new(InputIter(data)),
+        }
+    }
+
+    pub fn push(&self, val: isize) {
+        unsafe {
+            (*self.data.get()).push_front(val);
+        }
+    }
+
+    pub fn iter_mut<'b>(&'b self) -> &'b mut dyn Iterator<Item = isize> {
+        unsafe { &mut *self.iter.get() }
+    }
+}
+
+impl Iterator for InputIter {
+    type Item = isize;
+    fn next(&mut self) -> Option<isize> {
+        unsafe { (*self.0.get()).pop_back() }
     }
 }

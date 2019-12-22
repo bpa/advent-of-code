@@ -1,6 +1,4 @@
-use cpu::Intcode;
-use std::cell::UnsafeCell;
-use std::collections::VecDeque;
+use cpu::{Input, Intcode};
 use std::iter::once;
 use std::num::ParseIntError;
 
@@ -42,8 +40,8 @@ fn output_value(m: &Vec<isize>, phase: &[isize]) -> isize {
             let mut $name = Intcode::new(m.clone(), &mut chain);
         };
     }
-    let input = UnsafeCell::new(Input::new(&[phase[0], 0]));
-    let mut one = Intcode::new(m.clone(), unsafe { &mut (*input.get()) });
+    let input: Input = Input::new(&[phase[0], 0]);
+    let mut one = Intcode::new(m.clone(), input.iter_mut());
     computer!(two = 1 >> one);
     computer!(three = 2 >> two);
     computer!(four = 3 >> three);
@@ -53,7 +51,7 @@ fn output_value(m: &Vec<isize>, phase: &[isize]) -> isize {
         match five.next() {
             Some(value) => {
                 output = value;
-                unsafe { (*input.get()).0.push_front(output) };
+                input.push(output);
             }
             None => return output,
         }
@@ -110,25 +108,6 @@ impl Iterator for Phase {
         }
 
         Some(permutation)
-    }
-}
-
-struct Input(VecDeque<isize>);
-
-impl Input {
-    fn new(initial: &[isize]) -> Self {
-        let mut input = Input(VecDeque::new());
-        for val in initial {
-            input.0.push_front(*val);
-        }
-        input
-    }
-}
-
-impl Iterator for Input {
-    type Item = isize;
-    fn next(&mut self) -> Option<isize> {
-        self.0.pop_back()
     }
 }
 

@@ -23,5 +23,5 @@ pub fn arcade_blocks(m: &Vec<isize>) -> usize {
 
 #[aoc(day13, part2)]
 pub fn breakout_in_space(_: &[isize]) -> &'static str {
-    "run day13 executable and play for result"
+    "run day13 executable and play/watch for result"
 }

@@ -1,13 +1,12 @@
-use cpu::Intcode;
+use cpu::{read_memory, Intcode};
 use std::cell::UnsafeCell;
 use std::cmp::{max, min};
 use std::collections::HashMap;
 use std::fmt;
-use std::num::ParseIntError;
 
 #[aoc_generator(day11)]
-fn read_memory(input: &str) -> Result<Vec<isize>, ParseIntError> {
-    input.split(',').map(|num| num.parse::<isize>()).collect()
+fn load(input: &str) -> Vec<isize> {
+    read_memory(input)
 }
 
 #[aoc(day11, part1)]

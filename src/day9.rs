@@ -1,10 +1,9 @@
-use cpu::Intcode;
+use cpu::{read_memory, Intcode};
 use std::iter::once;
-use std::num::ParseIntError;
 
 #[aoc_generator(day9)]
-fn read_memory(input: &str) -> Result<Vec<isize>, ParseIntError> {
-    input.split(',').map(|num| num.parse::<isize>()).collect()
+fn load(input: &str) -> Vec<isize> {
+    read_memory(input)
 }
 
 #[aoc(day9, part1)]
