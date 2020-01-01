@@ -17,16 +17,16 @@ impl Nearest {
         }
     }
 
-    pub fn next_step(&mut self, loc: &Point, tiles: &HashMap<Point, Status>) -> Point {
+    pub fn next_step(&mut self, loc: &Point, tiles: &HashMap<Point, Status>) -> Option<Point> {
         if let Some(t) = self.adjacent.pop() {
-            return t;
+            return Some(t);
         }
 
         if self.path.is_empty() {
             self.search_for_next(loc, tiles);
         }
 
-        self.path.pop().unwrap()
+        self.path.pop()
     }
 
     pub fn populate_adjacent(&mut self, loc: Point, tiles: &HashMap<Point, Status>) {
@@ -51,12 +51,17 @@ impl Nearest {
         self.populate_adjacent(loc, tiles);
     }
 
-    fn search_for_next(&mut self, loc: &Point, tiles: &HashMap<Point, Status>) {
+    pub fn search_for_next(&mut self, loc: &Point, tiles: &HashMap<Point, Status>) -> isize {
         let mut queue = PriorityQueue::new();
         let mut seen = HashMap::new();
+        let mut max: isize = 0;
         queue.push(*loc, Reverse(0));
         let mut target = loop {
-            let (next, dist) = queue.pop().unwrap();
+            let (next, dist) = match queue.pop() {
+                Some(v) => v,
+                None => return max,
+            };
+            max = dist.0;
             let mut look = |x: isize, y: isize| {
                 let p = Point(x, y);
                 match seen.entry(p) {
@@ -94,5 +99,6 @@ impl Nearest {
                 break;
             }
         }
+        max
     }
 }

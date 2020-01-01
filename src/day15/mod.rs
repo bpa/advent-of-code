@@ -23,13 +23,46 @@ fn find_distance_to_oxygen(input: &Vec<isize>) -> usize {
     best_path_to_oxygen(&oxygen, &controller, &mut robot, &mut tiles).len()
 }
 
+#[aoc(day15, part2)]
+fn find_max_distance_to_oxygen(input: &Vec<isize>) -> isize {
+    let controller = Input::new(&[]);
+    let mut robot = Intcode::new(input.clone(), controller.iter_mut());
+    let mut tiles = HashMap::new();
+    let mut nearest = Nearest::new();
+    let mut loc = Point(0, 0);
+    let mut oxygen = Point(0, 0);
+    tiles.insert(Point(0, 0), Status::Open);
+    nearest.populate_adjacent(Point(0, 0), &tiles);
+
+    while let Some(next) = nearest.next_step(&loc, &tiles) {
+        controller.go(loc, next);
+        let status = match robot.next().unwrap() {
+            0 => Status::Wall,
+            1 => {
+                loc = next;
+                nearest.moved_to(next, &tiles);
+                Status::Open
+            }
+            2 => {
+                loc = next;
+                nearest.moved_to(next, &tiles);
+                oxygen = next;
+                Status::Oxygen
+            }
+            _ => panic!("Unknown response from robot"),
+        };
+        tiles.insert(next, status);
+    }
+    nearest.search_for_next(&oxygen, &tiles)
+}
+
 fn find_oxygen(input: &Input, robot: &mut Intcode, tiles: &mut HashMap<Point, Status>) -> Point {
     let mut nearest = Nearest::new();
     let mut loc = Point(0, 0);
     nearest.populate_adjacent(Point(0, 0), &tiles);
 
     loop {
-        let next = nearest.next_step(&loc, &tiles);
+        let next = nearest.next_step(&loc, &tiles).unwrap();
         input.go(loc, next);
         let status = match robot.next().unwrap() {
             0 => Status::Wall,
