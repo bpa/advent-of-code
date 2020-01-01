@@ -158,7 +158,7 @@ impl Input {
         }
     }
 
-    pub fn iter_mut<'b>(&'b self) -> &'b mut dyn Iterator<Item = isize> {
+    pub fn iter_mut(&self) -> &mut dyn Iterator<Item = isize> {
         unsafe { &mut *self.iter.get() }
     }
 }
