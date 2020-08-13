@@ -1,8 +1,9 @@
+use std::cmp;
 use std::convert::TryFrom;
 use std::default::Default;
 use std::ops::Add;
 
-#[derive(Debug, PartialEq, Default)]
+#[derive(Clone, Copy, Debug, PartialEq, Default)]
 struct AxialCoordinate {
     q: isize,
     r: isize,
@@ -14,6 +15,10 @@ impl AxialCoordinate {
             + (self.q + self.r - other.q - other.r).abs()
             + (self.r - other.r).abs())
             / 2
+    }
+
+    fn distance_from_center(self) -> isize {
+        cmp::max(cmp::max(self.q, self.r), -self.q - self.r)
     }
 }
 
@@ -45,10 +50,24 @@ impl TryFrom<&str> for AxialCoordinate {
 }
 
 #[aoc(day11, part1)]
-pub fn fuel_requirements(input: &str) -> isize {
+pub fn end_distance(input: &str) -> isize {
     input
         .split(',')
         .map(|dir| AxialCoordinate::try_from(dir).unwrap())
         .fold(AxialCoordinate::default(), |acc, dir| acc + dir)
         .distance(AxialCoordinate::default())
+}
+
+#[aoc(day11, part2)]
+pub fn max_distance(input: &str) -> isize {
+    let movement = input
+        .split(',')
+        .map(|dir| AxialCoordinate::try_from(dir).unwrap());
+    let mut loc = AxialCoordinate::default();
+    let mut max = 0;
+    for dir in movement {
+        loc = loc + dir;
+        max = cmp::max(loc.distance_from_center(), max);
+    }
+    max
 }
