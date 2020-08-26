@@ -31,7 +31,7 @@ fn connected(input: &Vec<Vec<usize>>) -> usize {
     queue.push_back(0);
     while let Some(program) = queue.pop_back() {
         if seen.insert(program) {
-            for connection in input[program].as_slice() {
+            for connection in input[program].iter() {
                 queue.push_back(*connection);
             }
         }
@@ -57,7 +57,7 @@ fn groups(input: &Vec<Vec<usize>>) -> usize {
         while let Some(program) = queue.pop_back() {
             if seen.insert(program) {
                 all.remove(&program);
-                for connection in input[program].as_slice() {
+                for connection in input[program].iter() {
                     queue.push_back(*connection);
                 }
             }
