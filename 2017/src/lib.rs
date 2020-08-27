@@ -3,6 +3,7 @@
 extern crate aoc_runner;
 #[macro_use]
 extern crate aoc_runner_derive;
+extern crate faster;
 extern crate nom;
 
 pub mod day1;

@@ -45,12 +45,50 @@ pub fn severity(input: &[Layer]) -> usize {
         .sum()
 }
 
+struct FirewallLayer {
+    pos: usize,
+    period: usize,
+}
+
+#[aoc(day13, part2)]
+pub fn delay(input: &[Layer]) -> usize {
+    let mut firewall: Vec<FirewallLayer> = input
+        .iter()
+        .map(|l| FirewallLayer {
+            pos: l.depth % l.period,
+            period: l.period,
+        })
+        .collect();
+    let mut delay = 0;
+    loop {
+        delay = delay + 1;
+        let mut caught = false;
+        for layer in firewall.iter_mut() {
+            let next = (layer.pos + 1) % layer.period;
+            layer.pos = next;
+            if next == 0 {
+                caught = true;
+            }
+        }
+        if !caught {
+            return delay;
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
+
     #[test]
     fn part1_sample() {
         let input = firewall("0: 3\n1: 2\n4: 4\n6: 4");
         assert_eq!(24, severity(&input));
+    }
+
+    #[test]
+    fn part2_sample() {
+        let input = firewall("0: 3\n1: 2\n4: 4\n6: 4");
+        assert_eq!(10, delay(&input));
     }
 }
