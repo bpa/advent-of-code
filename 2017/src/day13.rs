@@ -1,3 +1,5 @@
+use packed_simd::*;
+
 #[aoc_generator(day13)]
 pub fn firewall(input: &str) -> Vec<Layer> {
     input
@@ -45,32 +47,31 @@ pub fn severity(input: &[Layer]) -> usize {
         .sum()
 }
 
-struct FirewallLayer {
-    pos: usize,
-    period: usize,
-}
-
 #[aoc(day13, part2)]
 pub fn delay(input: &[Layer]) -> usize {
-    let mut firewall: Vec<FirewallLayer> = input
+    assert!(input.len() <= 64);
+    let period_values: Vec<u8> = input
         .iter()
-        .map(|l| FirewallLayer {
-            pos: l.depth % l.period,
-            period: l.period,
-        })
+        .map(|l| l.period as u8)
+        .cycle()
+        .take(64)
         .collect();
+    let initial_state: Vec<u8> = input
+        .iter()
+        .map(|l| (l.depth % l.period) as u8)
+        .cycle()
+        .take(64)
+        .collect();
+
+    let one = u8x64::splat(1);
+    let periods = u8x64::from_slice_unaligned(period_values.as_slice());
+    let mut firewall = u8x64::from_slice_unaligned(initial_state.as_slice());
+
     let mut delay = 0;
     loop {
         delay = delay + 1;
-        let mut caught = false;
-        for layer in firewall.iter_mut() {
-            let next = (layer.pos + 1) % layer.period;
-            layer.pos = next;
-            if next == 0 {
-                caught = true;
-            }
-        }
-        if !caught {
+        firewall = (firewall + one) % periods;
+        if firewall.min_element() > 0 {
             return delay;
         }
     }
