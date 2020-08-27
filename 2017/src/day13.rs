@@ -70,7 +70,8 @@ pub fn delay(input: &[Layer]) -> usize {
     let mut delay = 0;
     loop {
         delay = delay + 1;
-        firewall = (firewall + one) % periods;
+        firewall += one;
+        firewall %= periods;
         if firewall.min_element() > 0 {
             return delay;
         }
