@@ -26,6 +26,16 @@ struct Generator {
     divisor: u64,
 }
 
+impl Generator {
+    fn new(seed: u64, multiplier: u64, divisor: u64) -> Self {
+        Generator {
+            seed,
+            multiplier,
+            divisor,
+        }
+    }
+}
+
 impl Iterator for Generator {
     type Item = u64;
 
@@ -40,23 +50,38 @@ impl Iterator for Generator {
     }
 }
 
-#[aoc(day15, part2)]
-fn generators_match_picky(input: &(u64, u64)) -> usize {
-    let a = Generator {
-        seed: input.0,
-        multiplier: 16807,
-        divisor: 4,
-    };
-    let b = Generator {
-        seed: input.1,
-        multiplier: 48271,
-        divisor: 8,
-    };
-
-    a.zip(b)
+#[aoc(day15, part2, alt1)]
+fn generators_match_picky_iter(input: &(u64, u64)) -> usize {
+    Generator::new(input.0, 16807, 4)
+        .zip(Generator::new(input.1, 48271, 8))
         .take(5_000_000)
         .filter(|(a, b)| a & 0xFFFF == b & 0xFFFF)
         .count()
+}
+
+#[aoc(day15, part2, alt2)]
+fn generators_match_picky(input: &(u64, u64)) -> usize {
+    let mut a = input.0;
+    let mut b = input.1;
+    let mut matched = 0;
+    for _ in 0..5_000_000 {
+        loop {
+            a = a * 16807 % 2147483647;
+            if a % 4 == 0 {
+                break;
+            }
+        }
+        loop {
+            b = b * 48271 % 2147483647;
+            if b % 8 == 0 {
+                break;
+            }
+        }
+        if a & 0xFFFF == b & 0xFFFF {
+            matched += 1;
+        }
+    }
+    matched
 }
 
 #[cfg(test)]
