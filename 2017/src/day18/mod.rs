@@ -1,13 +1,14 @@
 mod instructions;
 mod parser;
 
-use self::instructions::Instruction;
+use self::instructions::{Instruction, RunResult};
+use std::collections::VecDeque;
 
 #[derive(Default, Debug)]
 pub struct State {
     pub instruction: isize,
     pub registers: [isize; 26],
-    pub frequency: isize,
+    pub input: VecDeque<isize>,
 }
 
 #[aoc_generator(day18)]
@@ -18,15 +19,21 @@ fn read_instructions(input: &str) -> Vec<Box<dyn Instruction>> {
 #[aoc(day18, part1)]
 fn first_freq(code: &Vec<Box<dyn Instruction>>) -> isize {
     let mut state = State::default();
+    let mut frequency = 0;
     let sentinel = code.len() as isize;
     loop {
         let i = state.instruction as usize;
-        if let Some(r) = code[i].exec(&mut state) {
-            return r;
+        match code[i].exec(&mut state) {
+            RunResult::Normal => state.instruction += 1,
+            RunResult::Jump(v) => state.instruction += v,
+            RunResult::Send(v) => {
+                frequency = v;
+                state.instruction += 1;
+            }
+            RunResult::Suspend => return frequency,
         }
-        state.instruction += 1;
         if state.instruction < 0 || state.instruction >= sentinel {
-            return state.frequency;
+            return frequency;
         }
     }
 }

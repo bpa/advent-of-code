@@ -18,12 +18,12 @@ pub fn parse(input: &str) -> IResult<&str, Vec<Box<dyn Instruction>>> {
 }
 
 macro_rules! parse_inst {
-    ($func:ident, $type:ident) => {
-        parse_inst! { $func, stringify!($func), $type }
+    ($type:ident) => {
+        paste! { parse_inst! { [<$type:lower>], stringify!([<$type:lower>]), $type }}
     };
 
-    ($func:ident, $type:ident, $arg:ident) => {
-        parse_inst! { $func, stringify!($func), $type, $arg }
+    ($type:ident, $arg:ident) => {
+        paste! {parse_inst! { [<$type:lower>], stringify!([<$type:lower>]), $type, $arg }}
     };
 
     ($func:ident, $tag:expr, $type:ident) => {
@@ -54,13 +54,13 @@ macro_rules! parse_inst {
     };
 }
 
-parse_inst! {add, Add, a}
-parse_inst! {jgz, Jgz, a}
-parse_inst! {mul, Mul, a}
+parse_inst! {Add, a}
+parse_inst! {Jgz, a}
+parse_inst! {Mul, a}
 parse_inst! {modulus, "mod", Mod, a}
-parse_inst! {rcv, Rcv }
-parse_inst! {snd, Snd }
-parse_inst! {set, Set, a}
+parse_inst! {Rcv}
+parse_inst! {Snd}
+parse_inst! {Set, a}
 
 fn instruction(input: &str) -> IResult<&str, Box<dyn Instruction>> {
     let (input, _) = multispace0(input)?;
