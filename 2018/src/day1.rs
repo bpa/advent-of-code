@@ -1,24 +1,8 @@
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::{digit1, multispace0};
-use nom::combinator::{map, opt, recognize, value};
-use nom::multi::many0;
-use nom::IResult;
 use std::collections::HashSet;
-
-fn number(input: &str) -> IResult<&str, isize> {
-    let (input, _) = multispace0(input)?;
-    let (input, _) = opt(tag(","))(input)?;
-    let (input, _) = multispace0(input)?;
-    let (input, sign) = alt((value(1, tag("+")), value(-1, tag("-"))))(input)?;
-    map(recognize(digit1), move |n: &str| {
-        sign * n.parse::<isize>().unwrap()
-    })(input)
-}
 
 #[aoc_generator(day1)]
 fn numbers(input: &str) -> Vec<isize> {
-    many0(number)(input).unwrap().1
+    input.lines().map(|n| n.parse::<isize>().unwrap()).collect()
 }
 
 #[aoc(day1, part1)]
