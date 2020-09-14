@@ -4,7 +4,7 @@ use nom::character::complete::{digit1, multispace0};
 use nom::combinator::{map, opt, recognize, value};
 use nom::multi::many0;
 use nom::IResult;
-use std::collections::BTreeSet;
+use std::collections::HashSet;
 
 fn number(input: &str) -> IResult<&str, isize> {
     let (input, _) = multispace0(input)?;
@@ -28,7 +28,7 @@ fn sum_them(input: &Vec<isize>) -> isize {
 
 #[aoc(day1, part2)]
 fn first_repeated_frequency(input: &Vec<isize>) -> isize {
-    let mut seen = BTreeSet::new();
+    let mut seen = HashSet::new();
     let mut freq = 0;
     for i in input.iter().cycle() {
         if !seen.insert(freq) {
