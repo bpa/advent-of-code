@@ -23,29 +23,23 @@ fn sum_them(input: &str) -> usize {
 
 #[aoc(day2, part2)]
 fn find_the_cloth(input: &str) -> String {
-    let ids: Vec<&str> = input.lines().collect();
-    let mut letters: Vec<Vec<Vec<usize>>> =
-        repeat_with(|| repeat_with(|| Vec::new()).take(26).collect())
-            .take(ids[0].len())
-            .collect();
-
-    let mut matches = HashMap::new();
-    for (entry, id) in ids.iter().enumerate() {
-        matches.clear();
-        for (c, pos) in id.chars().zip(letters.iter_mut()) {
-            let matched = &mut pos[c as usize - 'a' as usize];
-            for prev in matched.iter() {
-                *matches.entry(*prev).or_insert(0) += 1;
-            }
-            matched.push(entry);
-        }
-
-        if let Some((row, _)) = matches.iter().find(|(_, &v)| v == ids[0].len() - 1) {
-            return ids[*row]
+    let ids_vec = input.lines().collect::<Vec<&str>>();
+    let ids = ids_vec.as_slice();
+    for i in 0..ids.len() {
+        for j in i + 1..ids.len() {
+            if ids[i]
                 .chars()
-                .zip(id.chars())
-                .filter_map(|(a, b)| (a == b).then_some(a))
-                .collect();
+                .zip(ids[j].chars())
+                .filter(|(a, b)| a != b)
+                .count()
+                == 1
+            {
+                return ids[i]
+                    .chars()
+                    .zip(ids[j].chars())
+                    .filter_map(|(a, b)| (a == b).then_some(a))
+                    .collect();
+            }
         }
     }
     String::from("")
