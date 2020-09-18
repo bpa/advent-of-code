@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::iter::repeat_with;
 
 #[aoc(day2, part1)]
 fn sum_them(input: &str) -> usize {
