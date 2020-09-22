@@ -1,4 +1,4 @@
-use super::State;
+use super::Program;
 use std::fmt::Debug;
 
 pub enum RunResult {
@@ -8,88 +8,85 @@ pub enum RunResult {
     Suspend,
 }
 
+#[derive(Debug)]
+pub enum Field {
+    Register(isize),
+    Value(isize),
+}
+
 pub trait Instruction: Debug {
-    fn exec(&self, registers: &mut State) -> RunResult;
+    fn exec(&self, registers: &mut Program) -> RunResult;
 }
 
 macro_rules! impl_inst {
-    ($type:ident, $self:ident, $state:ident, $($member:ident),* $(,)* $body:block) => {
+    ($type:ident, $self:ident, $program:ident, $($member:ident),* $(,)* $body:block) => {
         #[derive(Debug)]
         pub struct $type {
-            pub r: usize,
+            pub r: Field,
             $(
-                pub $member: isize,
+                pub $member: Field,
             )*
         }
 
         impl Instruction for $type {
-            fn exec(&$self, $state: &mut State) -> RunResult $body
+            fn exec(&$self, $program: &mut Program) -> RunResult $body
         }
     };
 }
 
-impl_inst! {Add, self, state, a, {
-    state.registers[self.r] += self.a;
+macro_rules! value {
+    ($field:expr, $program:ident) => {
+        match $field {
+            Field::Register(r) => $program.registers[r as usize],
+            Field::Value(v) => v,
+        }
+    };
+}
+
+macro_rules! register {
+    ($self:ident, $program:ident) => {
+        $program.registers[match $self.r {
+            Field::Register(r) => r,
+            Field::Value(v) => v,
+        } as usize]
+    };
+}
+
+impl_inst! {Add, self, program, a, {
+    register![self, program] += value!(self.a, program);
     RunResult::Normal
 }}
 
-impl_inst! {AddR, self, state, a, {
-    state.registers[self.r] += state.registers[self.a as usize];
-    RunResult::Normal
-}}
-
-impl_inst! {Jgz, self, state, a, {
-    if state.registers[self.r] > 0 {
-        return RunResult::Jump(self.a);
+impl_inst! {Jgz, self, program, a, {
+    if value!(self.r, program) > 0 {
+        return RunResult::Jump(value!(self.a, program));
     }
     RunResult::Normal
 }}
 
-impl_inst! {JgzR, self, state, a, {
-    if state.registers[self.r] > 0 {
-        return RunResult::Jump(state.registers[self.a as usize]);
-    }
+impl_inst! {Mul, self, program, a, {
+    register![self, program] *= value![self.a, program];
     RunResult::Normal
 }}
 
-impl_inst! {Mul, self, state, a, {
-    state.registers[self.r] *= self.a;
+impl_inst! {Mod, self, program, a, {
+    register![self, program] %= value![self.a, program];
     RunResult::Normal
 }}
 
-impl_inst! {MulR, self, state, a, {
-    state.registers[self.r] *= state.registers[self.a as usize];
-    RunResult::Normal
-}}
-
-impl_inst! {Mod, self, state, a, {
-    state.registers[self.r] %= self.a;
-    RunResult::Normal
-}}
-
-impl_inst! {ModR, self, state, a, {
-    state.registers[self.r] %= state.registers[self.a as usize];
-    RunResult::Normal
-}}
-
-impl_inst! {Rcv, self, state, {
-    match state.input.pop_front() {
-        Some(value) => state.registers[self.r] = value,
+impl_inst! {Rcv, self, program, {
+    match program.input.pop_front() {
+        Some(value) => register![self, program] = value,
         None => return RunResult::Suspend,
     }
     RunResult::Normal
 }}
 
-impl_inst! {Snd, self, state, {
-    RunResult::Send(state.registers[self.r])
+impl_inst! {Snd, self, program, {
+    RunResult::Send(value![self.r, program])
 }}
 
-impl_inst! {Set, self, state, a,{
-    state.registers[self.r] = self.a;
-    RunResult::Normal
-}}
-
-impl_inst! {SetR, self, state, a,{
-    state.registers[self.r] = state.registers[self.a as usize];
+impl_inst! {Set, self, program, a,{
+    register![self, program] = value![self.a, program];
     RunResult::Normal
 }}

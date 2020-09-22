@@ -8,11 +8,6 @@ use nom::IResult;
 use paste::paste;
 use std::boxed::Box;
 
-enum Field {
-    Register(isize),
-    Value(isize),
-}
-
 pub fn parse(input: &str) -> IResult<&str, Vec<Box<dyn Instruction>>> {
     many1(instruction)(input)
 }
@@ -28,19 +23,15 @@ macro_rules! parse_inst {
 
     ($func:ident, $tag:expr, $type:ident) => {
         parse_inst! { $func, $tag, $type, input, r, {
-            Ok((input, Box::new($type { r: r as usize })))
+            Ok((input, Box::new($type { r })))
         }}
     };
 
     ($func:ident, $tag:expr, $type:ident, $arg:ident) => {
         parse_inst! { $func, $tag, $type, input, r, {
-            paste! {
             let (input, _) = multispace1(input)?;
             let (input, $arg) = field(input)?;
-            match $arg {
-                Field::Register(a) => Ok((input, Box::new([<$type R>] { r: r as usize, a }))),
-                Field::Value(a) => Ok((input, Box::new($type { r: r as usize, a }))),
-            }}
+            Ok((input, Box::new($type { r, $arg })))
         }}
     };
 
@@ -48,7 +39,7 @@ macro_rules! parse_inst {
         fn $func($input: &str) -> IResult<&str, Box<dyn Instruction>> {
             let ($input, _) = tag($tag)($input)?;
             let ($input, _) = multispace1($input)?;
-            let ($input, $r) = register($input)?;
+            let ($input, $r) = field($input)?;
             $body
         }
     };
