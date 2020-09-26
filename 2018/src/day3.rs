@@ -6,10 +6,10 @@ use nom::IResult;
 #[derive(Debug, PartialEq)]
 struct Claim {
     id: usize,
-    x: usize,
-    y: usize,
-    w: usize,
-    h: usize,
+    x1: usize,
+    y1: usize,
+    x2: usize,
+    y2: usize,
 }
 
 fn parse_claim(input: &str) -> IResult<&str, Claim> {
@@ -24,7 +24,16 @@ fn parse_claim(input: &str) -> IResult<&str, Claim> {
     let (input, w) = map(digit1, |num: &str| num.parse::<usize>().unwrap())(input)?;
     let (input, _) = tag("x")(input)?;
     let (input, h) = map(digit1, |num: &str| num.parse::<usize>().unwrap())(input)?;
-    Ok((input, Claim { id, x, y, w, h }))
+    Ok((
+        input,
+        Claim {
+            id,
+            x1: x,
+            y1: y,
+            x2: x + w,
+            y2: y + h,
+        },
+    ))
 }
 
 #[aoc_generator(day3)]
@@ -41,8 +50,8 @@ fn multi_claims(claims: &Vec<Claim>) -> usize {
     let fabric = whole_fabric.as_mut_slice();
     let mut overlapping = 0;
     for claim in claims {
-        for x in claim.x..claim.x + claim.w {
-            for y in claim.y..claim.y + claim.h {
+        for x in claim.x1..claim.x2 {
+            for y in claim.y1..claim.y2 {
                 let i = x + y * 1000;
                 fabric[i] += 1;
                 if fabric[i] == 2 {
@@ -55,22 +64,23 @@ fn multi_claims(claims: &Vec<Claim>) -> usize {
 }
 
 #[aoc(day3, part2)]
-fn the_one_good_claim(claims: &Vec<Claim>) -> usize {
-    let mut whole_fabric = vec![0usize; 1000 * 1000];
-    let fabric = whole_fabric.as_mut_slice();
-    let mut overlapping = 0;
-    for claim in claims {
-        for x in claim.x..claim.x + claim.w {
-            for y in claim.y..claim.y + claim.h {
-                let i = x + y * 1000;
-                fabric[i] += 1;
-                if fabric[i] == 2 {
-                    overlapping += 1;
-                }
+fn the_one_good_claim(claims: &[Claim]) -> usize {
+    'outer: for i in 0..claims.len() {
+        let claim = &claims[i];
+        for j in 0..claims.len() {
+            let other = &claims[j];
+            if claim.x1 < other.x2
+                && claim.x2 > other.x1
+                && claim.y1 < other.y2
+                && claim.y2 > other.y1
+                && claim.id != other.id
+            {
+                continue 'outer;
             }
         }
+        return claim.id;
     }
-    overlapping
+    0
 }
 
 #[cfg(test)]
@@ -85,24 +95,24 @@ mod test {
             vec![
                 Claim {
                     id: 1,
-                    x: 1,
-                    y: 3,
-                    w: 4,
-                    h: 4
+                    x1: 1,
+                    y1: 3,
+                    x2: 5,
+                    y2: 7
                 },
                 Claim {
                     id: 2,
-                    x: 3,
-                    y: 1,
-                    w: 4,
-                    h: 4
+                    x1: 3,
+                    y1: 1,
+                    x2: 7,
+                    y2: 5
                 },
                 Claim {
                     id: 3,
-                    x: 5,
-                    y: 5,
-                    w: 2,
-                    h: 2
+                    x1: 5,
+                    y1: 5,
+                    x2: 7,
+                    y2: 7
                 }
             ],
             parse_claims(CLAIMS)
@@ -115,7 +125,7 @@ mod test {
     }
 
     #[test]
-    fn part1() {
+    fn part2() {
         assert_eq!(3, the_one_good_claim(&parse_claims(CLAIMS)))
     }
 }
