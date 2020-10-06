@@ -15,8 +15,7 @@ enum EventType {
 
 #[derive(Debug, PartialEq)]
 struct Event {
-    day: usize,
-    hour: usize,
+    ts: usize,
     minute: usize,
     event_type: EventType,
 }
@@ -40,8 +39,7 @@ fn parse_entry(input: &str) -> IResult<&str, Event> {
     Ok((
         input,
         Event {
-            day,
-            hour,
+            ts: day * 10_000 + hour * 100 + minute,
             minute,
             event_type,
         },
@@ -50,12 +48,13 @@ fn parse_entry(input: &str) -> IResult<&str, Event> {
 
 #[aoc_generator(day4)]
 fn parse_log(input: &str) -> Vec<(usize, [usize; 60])> {
-    let mut log: Vec<&str> = input.lines().collect();
-    log.sort();
+    let mut log: Vec<Event> = input.lines().map(|l| parse_entry(l).unwrap().1).collect();
+    log.sort_unstable_by_key(|event| event.ts);
+
     let mut guards = HashMap::new();
     let mut guard: Option<&mut [usize; 60]> = None;
     let mut start_snooze = 0;
-    for event in log.iter().map(|l| parse_entry(l).unwrap().1) {
+    for event in log {
         match event.event_type {
             EventType::StartShift(id) => guard = Some(guards.entry(id).or_insert_with(|| [0; 60])),
             EventType::FallsAsleep => start_snooze = event.minute,
