@@ -11,7 +11,7 @@ use std::cmp::max;
 mod ops;
 mod register;
 
-fn number(input: &str) -> IResult<&str, isize> {
+pub fn number(input: &str) -> IResult<&str, isize> {
     map_res(recognize(pair(opt(char('-')), digit1)), |d: &str| {
         d.parse::<isize>()
     })(input)
