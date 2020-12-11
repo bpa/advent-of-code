@@ -15,5 +15,8 @@ with open(input) as file:
     for line in file.readlines():
         pass
 
+with open(input) as file:
+    items = list(file.readlines())
+
 print("Part 1:", answer)
 print("Part 2:", answer)
