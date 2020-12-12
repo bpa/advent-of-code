@@ -10,6 +10,7 @@ import re
 # re.compile(exp)
 
 input = "../input/2020/dayX.txt"
+input = "test.txt"
 answer = 0
 with open(input) as file:
     for line in file.readlines():
