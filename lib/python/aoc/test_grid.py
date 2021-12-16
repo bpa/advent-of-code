@@ -39,8 +39,7 @@ class TestGrid(unittest.TestCase):
     def test_shortest_path(self):
         g = maze()
         p = g.index(*[str(i) for i in range(10)])
-        open = ' 123456789'
-        def path(a, b): return len(g.shortest_path(p[str(a)], p[str(b)], open))
+        def path(a, b): return len(g.shortest_path(p[str(a)], p[str(b)], '#'))
         self.assertEqual(path(1, 5), 5)
         self.assertEqual(path(2, 4), 8)
         self.assertEqual(path(3, 7), 13)
@@ -50,7 +49,7 @@ class TestGrid(unittest.TestCase):
         g = maze()
         nums = '0123456789'
         open = ' 0123456789'
-        dist = g.distances(open, *list(nums))
+        dist = g.distances('#', *list(nums))
         self.assertEqual(
             dist['1'], {'2': 14, '3': 12, '4': 10, '5': 5, '6': 16, '7': 17})
         self.assertEqual(

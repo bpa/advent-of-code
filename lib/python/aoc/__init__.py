@@ -17,5 +17,6 @@ else:
 from .grid import Grid
 from .point import Point
 from .util import *
+from .string import r
 from . import puzzle
 from . import string

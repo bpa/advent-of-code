@@ -1,3 +1,6 @@
+from os import sep
+
+
 def lines(map=None):
     import sys
     if map == None:
@@ -12,49 +15,29 @@ def lines(map=None):
 
 def delimited(delimiter, map=None):
     import sys
-    if map == None:
-        with open(sys.argv[1]) as file:
-            for line in file.read().splitlines():
-                yield line.split(delimiter)
-    else:
-        with open(sys.argv[1]) as file:
-            for line in file.read().splitlines():
-                yield [map(i) for i in line.split(delimiter)]
+    from .string import delimited
+    with open(sys.argv[1]) as file:
+        return delimited(file.read().splitlines())
+
+
+def blocks():
+    import sys
+    with open(sys.argv[1]) as file:
+        return iter(file.read().split("\n\n"))
 
 
 def regex(r, map=None):
-    import re
     import sys
-    compiled = re.compile(r)
+    from .string import regex
     with open(sys.argv[1]) as file:
-        line_no = 0
-        for line in file.readlines():
-            line_no += 1
-            result = compiled.search(line)
-            if result:
-                if map == None:
-                    yield result.groups()
-                else:
-                    yield map(result.groups())
-            else:
-                raise Exception(
-                    f"puzzle.regex() failed to match\nregex: {r}\nline {line_no}: {line}")
+        return regex(file.readlines())
 
 
-def grid(separator=None, map=lambda a: a):
+def grid(separator=None, map=lambda a: a, format=None):
     import sys
-    from .grid import Grid
-    if separator:
-        def split(s): return s.split(separator)
-    else:
-        def split(a): return a
-    grid = []
+    from .string import grid
     with open(sys.argv[1]) as file:
-        for line in file.readlines():
-            line = line.rstrip()
-            row = [map(i) for i in split(line)]
-            grid.append(row)
-    return Grid(grid)
+        return grid(file.read(), separator=separator, map=map, format=None)
 
 
 def pandas(separator=None, map=lambda a: a):

@@ -14,11 +14,14 @@ class Point:
 
     def neighbor(self, x, y):
         nx = self.x + x
-        ny = self.y + y
-        if self.grid.is_valid(nx, ny):
-            return Point(self.grid, nx, ny)
-        else:
+        if nx < 0 or nx >= self.grid.width:
             return None
+
+        ny = self.y + y
+        if ny < 0 or ny >= self.grid.height:
+            return None
+
+        return Point(self.grid, nx, ny)
 
     def n(self): return self.neighbor(0, -1)
     def ne(self): return self.neighbor(1, -1)
@@ -39,7 +42,7 @@ class Point:
         from .func import nop1
         return filter(nop1, [self.n(), self.ne(), self.e(), self.se(), self.s(), self.sw(), self.w(), self.nw()])
 
-    def distance(self, to):
+    def manhattan_distance(self, to):
         return abs(self.x - to.x) + abs(self.y - to.y)
 
     def __iter__(self):
@@ -52,50 +55,38 @@ class Point:
         print(self, instance, value)
 
     def __lt__(self, o):
-        try:
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
 
         return self.get() < o
 
     def __le__(self, o):
-        try:
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
 
         return self.get() <= o
 
     def __eq__(self, o):
-        try:
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
 
         return self.get() == o
 
     def __ne__(self, o):
-        try:
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
 
         return self.get() != o
 
     def __gt__(self, o):
-        try:
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
 
         return self.get() > o
 
     def __ge__(self, o):
-        try:
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
 
         return self.get() >= o
 
@@ -106,213 +97,216 @@ class Point:
         return bool(self.grid.data[self.y][self.x])
 
     def __add__(self, o):
-        try:
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
 
         return self.get() + o
+    __radd__ = __add__
 
     def __sub__(self, o):
-        try:
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
 
         return self.get() - o
 
-    def __mul__(self, o):
-        try:
+    def __rsub__(self, o):
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
+
+        return o - self.get()
+
+    def __mul__(self, o):
+        if isinstance(o, Point):
+            o = o.get()
 
         return self.get() * o
+    __rmul__ = __mul__
 
     def __truediv__(self, o):
-        try:
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
 
         return self.get() / o
 
-    def __floordiv__(self, o):
-        try:
+    def __rtruediv__(self, o):
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
+
+        return o / self.get()
+
+    def __floordiv__(self, o):
+        if isinstance(o, Point):
+            o = o.get()
 
         return self.get() // o
 
-    def __mod__(self, o):
-        try:
+    def __rfloordiv__(self, o):
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
+
+        return o//self.get()
+
+    def __mod__(self, o):
+        if isinstance(o, Point):
+            o = o.get()
 
         return self.get() % o
 
-    def __divmod__(self, o):
-        try:
+    def __rmod__(self, o):
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
+
+        return o % self.get()
+
+    def __divmod__(self, o):
+        if isinstance(o, Point):
+            o = o.get()
 
         return divmod(self.get(), o)
 
-    def __pow__(self, o):
-        try:
+    def __rdivmod__(self, o):
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
+
+        return divmod(o, self.get())
+
+    def __pow__(self, o):
+        if isinstance(o, Point):
+            o = o.get()
 
         return pow(self.get(), o)
 
-    def __lshift__(self, o):
-        try:
+    def __rpow__(self, o):
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
+
+        return pow(o, self.get())
+
+    def __lshift__(self, o):
+        if isinstance(o, Point):
+            o = o.get()
 
         return self.get() << o
 
-    def __rshift__(self, o):
-        try:
+    def __rlshift__(self, o):
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
+
+        return o << self.get()
+
+    def __rshift__(self, o):
+        if isinstance(o, Point):
+            o = o.get()
 
         return self.get() >> o
 
-    def __and__(self, o):
-        try:
+    def __rrshift__(self, o):
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
+
+        return o >> self.get()
+
+    def __and__(self, o):
+        if isinstance(o, Point):
+            o = o.get()
 
         return self.get() & o
+    __rand__ = __and__
 
     def __xor__(self, o):
-        try:
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
 
         return self.get() ^ o
+    __rxor__ = __xor__
 
     def __or__(self, o):
-        try:
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
 
         return self.get() | o
+    __ror__ = __or__
 
     def __iadd__(self, o):
-        try:
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
 
         self.grid.data[self.y][self.x] += o
         return self
 
     def __isub__(self, o):
-        try:
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
 
         self.grid.data[self.y][self.x] -= o
         return self
 
     def __imul__(self, o):
-        try:
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
 
         self.grid.data[self.y][self.x] *= o
         return self
 
     def __itruediv__(self, o):
-        try:
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
 
         self.grid.data[self.y][self.x] /= o
         return self
 
     def __ifloordiv__(self, o):
-        try:
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
 
         self.grid.data[self.y][self.x] //= o
         return self
 
     def __imod__(self, o):
-        try:
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
 
         self.grid.data[self.y][self.x] %= o
         return self
 
     def __ipow__(self, o):
-        try:
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
 
         self.grid.data[self.y][self.x] += self.grid.data[self.y][self.x].pow(o)
         return self
 
     def __ilshift__(self, o):
-        try:
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
 
         self.grid.data[self.y][self.x] <<= o
         return self
 
     def __irshift__(self, o):
-        try:
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
 
         self.grid.data[self.y][self.x] >>= o
         return self
 
     def __iand__(self, o):
-        try:
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
 
         self.grid.data[self.y][self.x] &= o
         return self
 
     def __ixor__(self, o):
-        try:
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
 
         self.grid.data[self.y][self.x] += o
         return self
 
     def __ior__(self, o):
-        try:
+        if isinstance(o, Point):
             o = o.get()
-        except:
-            pass
 
         self.grid.data[self.y][self.x] |= o
         return self

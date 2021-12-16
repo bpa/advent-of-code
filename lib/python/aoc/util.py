@@ -75,3 +75,7 @@ def chunks(iterable, size, pad=None):
 
     if partial:
         yield arr[i:] + [pad] * partial
+
+
+def manhattan_distance(x0, y0, x1, y1):
+    return abs(x0 - x1) + abs(y0 - y1)

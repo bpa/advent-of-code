@@ -4,8 +4,11 @@ from .point import Point
 class Grid:
     """A 2D array of elements"""
 
-    def __init__(self, data):
+    def __init__(self, data, format=None, true=None, false=None):
         self.data = data
+        self.format = format
+        self.true = true
+        self.false = false
         self.height = len(data)
         self.width = len(data[0])
 
@@ -13,23 +16,16 @@ class Grid:
         """Are the x, y coordinates on the grid?"""
         return x >= 0 and x < self.width and y >= 0 and y < self.height
 
-    def get(self, x, y=None):
-        """Get the element at the point, or return None"""
-        if isinstance(x, Point):
-            if self.is_valid(x.x, x.y):
-                return self.data[x.y][x.x]
-        elif self.is_valid(x, y):
-            return self.data[y][x]
-        else:
-            return None
+    def at(self, x, y):
+        return Point(self, x, y)
 
-    def set(self, x, y, value=None):
+    def get(self, x, y):
         """Get the element at the point, or return None"""
-        if isinstance(x, Point):
-            if self.is_valid(x.x, x.y):
-                self.data[x.y][x.x] = y
-        elif self.is_valid(x, y):
-            self.data[y][x] = value
+        return self.data[y][x]
+
+    def set(self, x, y, value):
+        """Get the element at the point, or return None"""
+        self.data[y][x] = value
 
     def adjacent_4(self, x, y):
         """Get the n, e, s, w adjacent points"""
@@ -53,7 +49,7 @@ class Grid:
                     locations[value] = Point(self, x, y)
         return locations
 
-    def distances(self, open, *items, neighbors=4):
+    def distances(self, wall, *items, neighbors=4):
         # TODO: optimize with floodfill followed by lookups
         points = self.index(*items)
         dist = {key: {} for key in points.keys()}
@@ -64,42 +60,81 @@ class Grid:
                 end = items[j]
                 if end in points:
                     d = len(self.shortest_path(
-                        points[start], points[end], open=open, neighbors=neighbors))
+                        points[start], points[end], wall=wall, neighbors=neighbors))
                     dist[start][end] = d
                     dist[end][start] = d
         return dist
 
-    def shortest_path(self, a, b, open=' ', neighbors=4):
+    def shortest_path(self, a, b, wall='', neighbors=4, vertex_cost=lambda a, b: 1, distance=None):
+        if distance == None:
+            from .util import manhattan_distance as distance
         if neighbors == 4:
-            adj = Point.adjacent_4
+            adj = [(0, -1), (1, 0), (0, 1), (-1, 0)]
         elif neighbors == 8:
-            adj = Point.adjacent_8
+            adj = [(0, -1), (1, -1), (1, 0), (1, 1),
+                   (0, 1), (-1, 1), (-1, 0), (-1, -1)]
         else:
             raise Exception("Invalid number of neighbors")
 
-        paths = {}
         import sys
-        g_score = [[sys.maxsize] * self.width for i in range(self.height)]
-        g_score[a.y][a.x] = 0
+        (G, CLOSED, PARENT_X, PARENT_Y) = range(4)
+        nodes = []
+        for y in range(self.width):
+            row = []
+            for x in range(self.height):
+                row.append([sys.maxsize, False, None, None])
+            nodes.append(row)
 
-        from heapq import heapify, heappop, heappush
-        queue = [(0, a)]
-        point = a
+        start = nodes[a.y][a.x]
+        start[G] = 0
+
+        from heapq import heappop, heappush
+        queue = [(0, a.x, a.y)]
         while queue:
-            (distance, point) = heappop(queue)
-            if point == b:
+            (_, x, y) = heappop(queue)
+            node = nodes[y][x]
+            node[CLOSED] = True
+            if x == b.x and y == b.y:
                 break
-            for n in adj(point):
-                g = g_score[n.y][n.x]
-                if n.get() in open and g > (distance + 1):
-                    paths[n] = point
-                    g_score[n.y][n.x] = distance + 1
-                    heappush(queue, (n.distance(point) + distance + 1, n))
+
+            for (dx, dy) in adj:
+                nx = x + dx
+                if nx < 0 or nx >= self.width:
+                    continue
+
+                ny = y + dy
+                if ny < 0 or ny >= self.height:
+                    continue
+
+                if self.data[ny][nx] in wall:
+                    continue
+
+                n2 = nodes[ny][nx]
+                if n2[CLOSED]:
+                    continue
+
+                g = node[G] + vertex_cost(self.data[y][x], self.data[ny][nx])
+                if g >= n2[G]:
+                    continue
+
+                n2[G] = g
+                n2[PARENT_X] = x
+                n2[PARENT_Y] = y
+                h = distance(nx, ny, b.x, b.y)
+                # TODO: Figure out how to remove the existing node from the open list
+                # if not n2[OPEN]:
+                heappush(queue, (g + h, nx, ny))
+                # n2[OPEN] = True
 
         path = []
-        while point in paths:
-            path.append(point)
-            point = paths[point]
+        x = b.x
+        y = b.y
+        point = nodes[y][x]
+        while point[PARENT_X] != None:
+            path.append(Point(self, x, y))
+            x = point[PARENT_X]
+            y = point[PARENT_Y]
+            point = nodes[y][x]
         return path
 
     def _bounds(self, x1=None, y1=None, x0=None, y0=None):
@@ -136,17 +171,34 @@ class Grid:
                     cnt += 1
         return cnt
 
-    def to_string(self, x1=None, y1=None, x0=None, y0=None, true=None, false=None):
+    def sum(self, x1=None, y1=None, x0=None, y0=None):
+        (x1, y1, x0, y0) = self._bounds(x1, y1, x0, y0)
+        total = 0
+        for y in range(y0, y1):
+            for x in range(x0, x1):
+                total += self.data[y][x]
+        return total
+
+    def to_string(self, x1=None, y1=None, x0=None, y0=None):
         (x1, y1, x0, y0) = self._bounds(x1, y1, x0, y0)
 
+        true = None
+        false = None
         if isinstance(self.data[0][0], bool):
-            if true == None:
+            if self.true == None:
                 true = '#'
-            if false == None:
+            if self.false == None:
                 false = '.'
+
+        if self.format == None:
+            to_string = str
+        else:
+            def to_string(v):
+                return self.format.format(v)
 
         from io import StringIO
         repr = StringIO()
+        repr.write("\n")
         for y in range(y0, y1):
             for x in range(x0, x1):
                 value = self.data[y][x]
@@ -154,17 +206,20 @@ class Grid:
                     if true:
                         repr.write(true)
                     else:
-                        repr.write(str(value))
+                        repr.write(to_string(value))
                 else:
                     if false:
                         repr.write(false)
                     else:
-                        repr.write(str(value))
+                        repr.write(to_string(value))
             repr.write("\n")
         return repr.getvalue()
 
+    def __str__(self):
+        return self.to_string()
+
     def __repr__(self):
-        return "\n" + "\n".join(map(lambda row: ''.join(map(str, row)), self.data))
+        return "\n" + "\n".join(map(lambda row: str(row), self.data))
 
     def __iter__(self):
         for y in range(self.height):
