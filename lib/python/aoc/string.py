@@ -1,3 +1,6 @@
+from aoc.util import nop1
+
+
 PAIRS = {}
 if True:
     from .util import chunks
@@ -46,18 +49,32 @@ def grid(lines, separator=None, map=lambda a: a, format=None):
     return Grid(grid, format)
 
 
-def regex(iterable, r, map=None):
+def regex(iterable, r, map_each=None, map=None):
     import re
     compiled = re.compile(r)
-    line_no = 0
-    for line in iterable:
-        line_no += 1
+    line_no = 1
+    from logging import debug
+
+    debug("yeah")
+
+    def match(compiled, line, line_no):
         result = compiled.search(line)
         if result:
-            if map == None:
-                yield result.groups()
-            else:
-                yield map(result.groups())
+            debug(result)
+            debug(result.groups())
+            if map:
+                return map(result.groups())
+            if map_each:
+                return [map(v) for v in result.groups()]
+            return result.groups()
         else:
             raise Exception(
                 f"puzzle.regex() failed to match\nregex: {r}\nline {line_no}: {line}")
+
+    if isinstance(iterable, str):
+        debug("Its a string")
+        return match(compiled, iterable, line_no)
+    for line in iterable:
+        debug("Not a string")
+        yield match(compiled, iterable, line_no)
+        line_no += 1

@@ -26,11 +26,18 @@ def blocks():
         return iter(file.read().split("\n\n"))
 
 
-def regex(r, map=None):
+def regex(r, map_each=None, map=None, one_line=False):
     import sys
     from .string import regex
+    from logging import debug
     with open(sys.argv[1]) as file:
-        return regex(file.readlines())
+        if one_line:
+            x = regex(file.read(), r, map_each, map)
+            debug(x)
+            return x
+        else:
+            debug("Why am I here?")
+            return regex(file.readlines(), r, map_each, map)
 
 
 def grid(separator=None, map=lambda a: a, format=None):
