@@ -33,10 +33,8 @@ def regex(r, map_each=None, map=None, one_line=False):
     with open(sys.argv[1]) as file:
         if one_line:
             x = regex(file.read(), r, map_each, map)
-            debug(x)
             return x
         else:
-            debug("Why am I here?")
             return regex(file.readlines(), r, map_each, map)
 
 

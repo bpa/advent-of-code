@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import functools
 from aoc import *
 
 
@@ -41,12 +42,15 @@ rolls = [
     (9, 1),
 ]
 
+NEXT_TILE = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
+
+@functools.lru_cache(maxsize=None)
 def quantify(turn, player, scores):
     wins = [0, 0]
     for (roll, freq) in rolls:
-        tile = (player[turn] + roll) % 10
-        score = scores[turn] + tile + 1
+        tile = NEXT_TILE[player[turn] + roll]
+        score = scores[turn] + tile
         if score >= 21:
             wins[turn] += freq
         else:
@@ -62,8 +66,8 @@ def quantify(turn, player, scores):
 
 def part2():
     lines = puzzle.lines()
-    one = int(next(lines)[-2:]) - 1
-    two = int(next(lines)[-2:]) - 1
+    one = int(next(lines)[-2:])
+    two = int(next(lines)[-2:])
     return max(quantify(0, (one, two), (0, 0)))
 
 

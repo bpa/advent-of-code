@@ -48,7 +48,8 @@ class Handler(FileSystemEventHandler):
         try:
             if os.path.getsize(self.test_input) > 0:
                 os.environ['DEBUG'] = 'true'
-                subprocess.run(f'{self.run} {self.test_input}', shell=True)
+                subprocess.run(
+                    f'{self.run} {self.test_input}', shell=True)
                 os.environ.pop('DEBUG')
                 print("\n----\n")
         except:
@@ -69,11 +70,13 @@ def schedule_python(observer, year, day):
     handler = Handler(year, day, f'python3 {script}')
     observer.schedule(handler, script)
     observer.schedule(handler, str(libdir), recursive=True)
+    observer.schedule(handler, f'input/{year}/day{day}.test')
 
 
 def schedule_rust(observer, year, day):
-    observer.schedule(
-        Handler(year, day, f'cargo aoc -d {day} -i'), 'src', recursive=True)
+    handler = Handler(year, day, f'cargo aoc -d {day} -i')
+    observer.schedule(handler, f'input/{year}/day{day}.test')
+    observer.schedule(handler, 'src', recursive=True)
 
 
 if __name__ == '__main__':
