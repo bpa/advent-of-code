@@ -12,6 +12,10 @@ class Grid:
         self.height = len(data)
         self.width = len(data[0])
 
+    @classmethod
+    def of(cls, w, h, default_value=None):
+        return cls([[default_value for _ in range(w)] for _ in range(h)])
+
     def is_valid(self, x, y):
         """Are the x, y coordinates on the grid?"""
         return x >= 0 and x < self.width and y >= 0 and y < self.height
@@ -162,7 +166,7 @@ class Grid:
             for x in range(x0, x1):
                 yield (x, y, Point(self, x, y))
 
-    def count(self, f, x1=None, y1=None, x0=None, y0=None):
+    def count(self, f=lambda a: a, x1=None, y1=None, x0=None, y0=None):
         (x1, y1, x0, y0) = self._bounds(x1, y1, x0, y0)
         cnt = 0
         for y in range(y0, y1):

@@ -15,8 +15,7 @@ else:
     logging.basicConfig(level=logging.WARNING,
                         format='%(filename)s:%(lineno)s %(message)s')
 from .grid import Grid
+from .main import main
 from .point import Point
 from .util import *
-from .string import r
-from . import puzzle
-from . import string
+from .string import *

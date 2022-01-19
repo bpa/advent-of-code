@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from platform import system
 import sys
 import os
@@ -10,7 +10,6 @@ from string import Template
 import time
 import subprocess
 from pathlib import Path
-from watchdog import observers
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
@@ -25,13 +24,14 @@ def fetch_input(year, day):
     start = datetime(int(year), 12, int(day), tzinfo=timezone('est'))
     if now < start:
         time.sleep((start - now).total_seconds() + 30)
-    subprocess.run(f'cargo aoc input -y {year} -d {day}', shell=True)
+    if not os.path.exists(f'input/{year}/day{day}.txt'):
+        subprocess.run(f'cargo aoc input -y {year} -d {day}', shell=True)
 
 
 class Handler(FileSystemEventHandler):
     def __init__(self, year, day, run):
-        self.input = f'input/{year}/day{day}.txt'
-        self.test_input = f'input/{year}/day{day}.test'
+        self.input = f'../input/{year}/day{day}.txt'
+        self.test_input = f'../input/{year}/day{day}.test'
         self.run = run
         self.debounce = {}
 
@@ -57,30 +57,42 @@ class Handler(FileSystemEventHandler):
         subprocess.run(f'{self.run} {self.input}', shell=True)
 
 
-def schedule_python(observer, year, day):
+def command_python(day):
     libdir = Path(__file__).parent.resolve() / 'lib/python'
-    template = libdir / 'template.py'
-    script = f'python/day{day}.py'
-    if not Path(script).exists():
-        with open(libdir/'template.py') as f:
-            template = Template(f.read())
-        with open(script, 'w') as day:
-            day.write(template.substitute(day=day, year=year))
     os.environ['PYTHONPATH'] = str(libdir)
-    handler = Handler(year, day, f'python3 {script}')
-    observer.schedule(handler, script)
-    observer.schedule(handler, str(libdir), recursive=True)
-    observer.schedule(handler, f'input/{year}/day{day}.test')
+
+    return f'python3 day{day}.py'
 
 
-def schedule_rust(observer, year, day):
-    handler = Handler(year, day, f'cargo aoc -d {day} -i')
-    observer.schedule(handler, f'input/{year}/day{day}.test')
-    observer.schedule(handler, 'src', recursive=True)
+def command_rust(day):
+    return f'cargo aoc -d {day} -i'
+
+
+def command_go(day):
+    return f'go run day{day}.go'
+
+
+LANG = {
+    "go": ['go', 'go'],
+    "python": ['py', 'python'],
+    "rust": ['rs', 'src'],
+}
+
+
+def write_day_template(lang, year, day):
+    (ext, dir) = LANG[lang]
+    print(Path(__file__).parent.resolve())
+    templatedir = Path(__file__).parent.resolve() / 'templates'
+    script = f'{dir}/day{day}.{ext}'
+    if not Path(script).exists():
+        with open(templatedir/f'template.{ext}') as f:
+            template = Template(f.read())
+        with open(script, 'w') as file:
+            file.write(template.substitute(day=day, year=year))
 
 
 if __name__ == '__main__':
-    languages = sorted([l[9:] for l in globals() if l.startswith('schedule_')])
+    languages = sorted([l[8:] for l in globals() if l.startswith('command_')])
     if len(sys.argv) < 3 or sys.argv[2] not in languages:
         print(f"Usage: {sys.argv[0]} <day> <lang>")
         print(f"  Supported languages: {languages}")
@@ -89,10 +101,18 @@ if __name__ == '__main__':
     day = sys.argv[1]
     lang = sys.argv[2]
 
+    write_day_template(lang, year, day)
+    fetch_input(year, day)
+
+    libdir = Path(__file__).parent.resolve() / f'lib/{lang}'
+
+    os.chdir(LANG[lang][1])
     observer = Observer()
-    globals()[f'schedule_{lang}'](observer, year, day)
-    if len(sys.argv) > 3:
-        fetch_input(year, day)
+    cmd = globals()[f'command_{lang}'](day)
+    handler = Handler(year, day, cmd)
+    observer.schedule(handler, '.', recursive=True)
+    observer.schedule(handler, str(libdir), recursive=True)
+    observer.schedule(handler, f'../input/{year}/day{day}.test')
     observer.start()
     print("Watching for events")
 

@@ -1,17 +1,13 @@
 #!/usr/bin/env python3
 
 from aoc import *
-# re.findall(exp, text)
-# re.search() -> anywhere
-# re.match -> beginning
-# re.split(exp, text)
-# re.compile(exp)
 
 
 def part1():
     answer = 0
-    for line in puzzle.lines():
-        pass
+    map = puzzle.grid()
+    points = map.index(*list('1234567890'))
+    debug(points)
     return answer
 
 
