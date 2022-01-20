@@ -12,6 +12,22 @@ import (
 	"strings"
 )
 
+func ListOfInt(input string, delimiter ...string) []int {
+	var intStrings []string
+	if len(delimiter) > 0 {
+		intStrings = strings.Split(input, delimiter[0])
+	} else {
+		intStrings = strings.Fields(input)
+	}
+	ints := make([]int, len(intStrings))
+	for i, s := range intStrings {
+		if v, err := strconv.Atoi(s); err == nil {
+			ints[i] = v
+		}
+	}
+	return ints
+}
+
 func ToInt(a string) int {
 	if v, err := strconv.Atoi(a); err == nil {
 		return v
