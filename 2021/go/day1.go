@@ -8,7 +8,7 @@ import (
 	"github.com/bpa/aoc/util"
 )
 
-func day1_part1(input string) int {
+func day1Part1(input string) int {
 	var count = 0
 	var prior = -1
 	for _, depth := range strings.Split(input, "\n") {
@@ -29,7 +29,7 @@ func toInt(a string) int {
 	return 0
 }
 
-func day1_part2(input string) int {
+func day1Part2(input string) int {
 	var count = 0
 	var prior = 0
 	numbers := strings.Split(input, "\n")
@@ -49,6 +49,6 @@ func day1_part2(input string) int {
 
 func main() {
 	input := util.Input()
-	fmt.Printf("Part 1: %v\n", day1_part1(input))
-	fmt.Printf("Part 2: %v\n", day1_part2(input))
+	fmt.Printf("Part 1: %v\n", day1Part1(input))
+	fmt.Printf("Part 2: %v\n", day1Part2(input))
 }

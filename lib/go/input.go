@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"os"
 	"path/filepath"
@@ -11,14 +12,6 @@ import (
 	"strings"
 )
 
-func lines() []string {
-	data, err := os.ReadFile(os.Args[1])
-	if err != nil {
-		panic(err)
-	}
-	return strings.Split(string(data), "\n")
-}
-
 func ToInt(a string) int {
 	if v, err := strconv.Atoi(a); err == nil {
 		return v
@@ -27,6 +20,10 @@ func ToInt(a string) int {
 }
 
 func Input() string {
+	//TODO: Add this to a common main
+	if os.Getenv("DEBUG") != "" {
+		log.SetLevel(log.DebugLevel)
+	}
 	var filename string
 	if len(os.Args) > 1 {
 		filename = os.Args[1]

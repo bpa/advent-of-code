@@ -39,7 +39,11 @@ class Handler(FileSystemEventHandler):
         if event.is_directory or '__pycache__' in event.src_path or event.src_path[-4:] in ['.tmp', '.swp']:
             return
 
-        modified = os.path.getmtime(event.src_path)
+        try:
+            modified = os.path.getmtime(event.src_path)
+        except:
+            return
+
         last_modified = self.debounce.get(event.src_path, 0)
         if modified - last_modified < 1:
             return
@@ -81,7 +85,6 @@ LANG = {
 
 def write_day_template(lang, year, day):
     (ext, dir) = LANG[lang]
-    print(Path(__file__).parent.resolve())
     templatedir = Path(__file__).parent.resolve() / 'templates'
     script = f'{dir}/day{day}.{ext}'
     if not Path(script).exists():
