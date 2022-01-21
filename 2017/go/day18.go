@@ -5,7 +5,6 @@ import (
 	"github.com/bpa/aoc/util"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -23,7 +22,7 @@ func (r *Registers) set(i string, v int) {
 }
 
 func day18Part1(input string) int {
-	assembly := parseDay18Assembly(input)
+	assembly := util.Delimited(input)
 	i := 0
 	answer := 0
 	registers := Registers(make([]int, 26))
@@ -57,7 +56,7 @@ func day18Part1(input string) int {
 }
 
 func day18Part2(input string) int {
-	assembly := parseDay18Assembly(input)
+	assembly := util.Delimited(input)
 	a := make(chan int, 1000)
 	b := make(chan int, 1000)
 	answer := make(chan int)
@@ -105,15 +104,6 @@ func runDay18(assembly [][]string, id int, in, out, ans chan int) {
 		}
 		i++
 	}
-}
-
-func parseDay18Assembly(input string) [][]string {
-	lines := strings.Split(input, "\n")
-	assembly := make([][]string, len(lines))
-	for i, line := range lines {
-		assembly[i] = strings.Fields(line)
-	}
-	return assembly
 }
 
 func main() {

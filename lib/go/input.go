@@ -46,7 +46,7 @@ func Input() string {
 	} else {
 		var exe string
 		exe, err := os.Executable()
-		if err != nil || strings.HasPrefix(exe, "/tmp") {
+		if err != nil || strings.HasPrefix(exe, "/tmp") || strings.HasPrefix(exe, "/var"){
 			exe, err = os.Getwd()
 			if err != nil {
 				fmt.Println("All attempts to detect input failed")
