@@ -35,13 +35,15 @@ func ToInt(a string) int {
 	return 0
 }
 
-func Input() string {
+func Input(fname ...string) string {
 	//TODO: Add this to a common main
 	if os.Getenv("DEBUG") != "" {
 		log.SetLevel(log.DebugLevel)
 	}
 	var filename string
-	if len(os.Args) > 1 {
+	if len(fname) > 0 {
+		filename = fname[0]
+	} else if len(os.Args) > 1 {
 		filename = os.Args[1]
 	} else {
 		var exe string
@@ -81,5 +83,5 @@ func Input() string {
 		os.Exit(1)
 	}
 
-	return string(file)
+	return strings.TrimSuffix(string(file), "\n")
 }

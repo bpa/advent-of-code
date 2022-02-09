@@ -1,3 +1,4 @@
+use num::Integer;
 use std::cell::RefCell;
 use std::cmp::Ordering;
 mod parser;
@@ -86,5 +87,42 @@ impl Moon {
 
     fn energy(&self) -> isize {
         self.position.energy() * self.velocity.energy()
+    }
+}
+
+#[aoc(day12, part2)]
+fn part2(moons: &[Coordinate]) -> isize {
+    let x = period(moons.iter().map(|c| c.x).collect());
+    let y = period(moons.iter().map(|c| c.y).collect());
+    let z = period(moons.iter().map(|c| c.z).collect());
+    x.lcm(&y).lcm(&z)
+}
+
+fn period(mut positions: Vec<isize>) -> isize {
+    let mut period = 0;
+    let mut velocities = vec![0; positions.len()];
+    loop {
+        for (i, a) in positions.iter().enumerate() {
+            for (j, b) in positions.iter().enumerate().skip(i + 1) {
+                match a.cmp(b) {
+                    Ordering::Less => {
+                        velocities[i] += 1;
+                        velocities[j] -= 1;
+                    }
+                    Ordering::Equal => {}
+                    Ordering::Greater => {
+                        velocities[i] -= 1;
+                        velocities[j] += 1;
+                    }
+                }
+            }
+        }
+        for (p, v) in positions.iter_mut().zip(&velocities) {
+            *p += v;
+        }
+        period += 1;
+        if velocities.iter().all(|v| *v == 0) {
+            return period * 2;
+        }
     }
 }

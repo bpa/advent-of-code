@@ -47,7 +47,7 @@ func day1Part2(input string) int {
 	return count
 }
 
-func main() {
+func main1() {
 	input := util.Input()
 	fmt.Printf("Part 1: %v\n", day1Part1(input))
 	fmt.Printf("Part 2: %v\n", day1Part2(input))

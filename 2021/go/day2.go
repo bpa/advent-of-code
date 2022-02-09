@@ -45,7 +45,7 @@ func day2Part2(input string) int {
 	return x * y
 }
 
-func main() {
+func main2() {
 	input := util.Input()
 	fmt.Printf("Part 1: %v\n", day2Part1(input))
 	fmt.Printf("Part 2: %v\n", day2Part2(input))

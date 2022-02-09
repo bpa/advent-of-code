@@ -2,13 +2,23 @@
 
 import math
 from collections import defaultdict
-from pprint import pprint
 from typing import List
 
 input = "../input/2020/day20.txt"
-# input = "test.txt"
+#input = "../input/2020/day20.test"
 
 mirror_map = [4, 7, 6, 5, 0, 3, 2, 1]
+oriented_scan = [
+    lambda x, y, tile: tile[x][y],
+    lambda x, y, tile: tile[y][-1-x],
+    lambda x, y, tile: tile[-1-x][-1-y],
+    lambda x, y, tile: tile[-1-y][x],
+
+    lambda x, y, tile: tile[x][-1-y],
+    lambda x, y, tile: tile[y][x],
+    lambda x, y, tile: tile[-1-x][y],
+    lambda x, y, tile: tile[-1-y][-1-x],
+]
 
 
 def get_orientation(o, dir):
@@ -53,7 +63,8 @@ class Tile:
 
     def __repr__(self):
         # return f'{self.id} {self.signatures}'
-        return str(self.id)
+        return f'{self.id} {self.orientation}'
+        #return str(self.id)
 
 
 tiles = []
@@ -116,3 +127,41 @@ def stitch(candidates, x, y):
 stitch(((t.offset, o) for t in sorted(tiles, key=lambda t: t.links) for o in [0, 1, 2, 3]), 0, 0)
 answer = math.prod([placed[x][y].id for x in [0, width - 1] for y in [0, width - 1]])
 print("Part 1:", answer)
+
+size = width * 8
+image = [[False] * size for _ in range(size)]
+for j, row in enumerate(placed):
+    for i, tile in enumerate(row):
+        f = oriented_scan[tile.orientation]
+        for y in range(1, 9):
+            for x in range(1, 9):
+                image[j*8+y-1][i*8+x-1] = f(x, y, tile.lines)
+
+waves = 0
+for y in range(size):
+    for x in range(size):
+        if image[y][x] == '#':
+            waves += 1
+
+def sighted(x, y, f):
+    for i in range(6):
+        if f(i*3+x, y, image) == '.':
+            return False
+    for i in range(3):
+        if f(i*6+x-1,y-1, image) == '.' or f(i*6+x+4,y-1,image) == '.':
+            return False
+    if f(x+17, y-1, image) == '.' or f(x+18, y-1, image) == '.' or f(x+17, y-2, image) == '.':
+        return False
+    return True
+
+for o in range(8):
+    count = 0
+    f = oriented_scan[o]
+    for y in range(2, size):
+        for x in range(1, size-19):
+            if sighted(x, y, f):
+                count += 1
+    if count:
+        break
+
+print("Part 2:", waves - count * 15)

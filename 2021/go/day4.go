@@ -2,14 +2,13 @@ package main
 
 import (
 	"fmt"
+	"github.com/bpa/aoc/util"
 	"sort"
 	"strings"
 	"sync"
-
-	"github.com/bpa/aoc/util"
 )
 
-func solveDay4(input string) int {
+func solveDay4(input string) (int, int) {
 	blocks := strings.Split(input, "\n\n")
 	numbers := util.ListOfInt(blocks[0], ",")
 	players := make([]chan int, len(blocks)-1)
@@ -17,7 +16,7 @@ func solveDay4(input string) int {
 
 	var wg sync.WaitGroup
 	for i, board := range blocks[1:] {
-		players[i] = make(chan int)
+		players[i] = make(chan int, 10000)
 		wg.Add(1)
 		go func(i int, board *Board, numbers chan int) {
 			defer wg.Done()
@@ -62,10 +61,7 @@ func solveDay4(input string) int {
 	sort.Slice(done, func(i, j int) bool {
 		return done[i][0] < done[j][0]
 	})
-	fmt.Printf("Part 1: %d\n", done[0][1])
-	fmt.Printf("Part 2: %d\n", done[len(done)-1][1])
-
-	return 0
+	return done[0][1], done[len(done)-1][1]
 }
 
 type Board struct {
@@ -116,6 +112,8 @@ func (b *Board) Sum() int {
 	return sum
 }
 
-func main() {
-	solveDay4(util.Input())
+func main4() {
+	one, two := solveDay4(util.Input())
+	fmt.Printf("Part 1: %d\n", one)
+	fmt.Printf("Part 2: %d\n", two)
 }
