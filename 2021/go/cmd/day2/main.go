@@ -1,10 +1,9 @@
 package main
 
 import (
+	"aoc"
 	"fmt"
 	"strings"
-
-	"github.com/bpa/aoc/util"
 )
 
 func day2_part1(input string) int {
