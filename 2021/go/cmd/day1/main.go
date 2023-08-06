@@ -1,11 +1,10 @@
 package main
 
 import (
+	"aoc"
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/bpa/aoc/util"
 )
 
 func day1Part1(input string) int {
