@@ -23,24 +23,53 @@ class Point:
 
         return Point(self.grid, nx, ny)
 
-    def n(self): return self.neighbor(0, -1)
-    def ne(self): return self.neighbor(1, -1)
-    def e(self): return self.neighbor(1, 0)
-    def se(self): return self.neighbor(1, 1)
-    def s(self): return self.neighbor(0, 1)
-    def sw(self): return self.neighbor(-1, 1)
-    def w(self): return self.neighbor(-1, 0)
-    def nw(self): return self.neighbor(-1, -1)
+    def n(self):
+        return self.neighbor(0, -1)
+
+    def ne(self):
+        return self.neighbor(1, -1)
+
+    def e(self):
+        return self.neighbor(1, 0)
+
+    def se(self):
+        return self.neighbor(1, 1)
+
+    def s(self):
+        return self.neighbor(0, 1)
+
+    def sw(self):
+        return self.neighbor(-1, 1)
+
+    def w(self):
+        return self.neighbor(-1, 0)
+
+    def nw(self):
+        return self.neighbor(-1, -1)
 
     def adjacent_4(self):
         """Get the n, e, s, w adjacent points"""
         from .func import nop1
+
         return filter(nop1, [self.n(), self.e(), self.s(), self.w()])
 
     def adjacent_8(self):
         """Get the n, e, s, w adjacent points"""
         from .func import nop1
-        return filter(nop1, [self.n(), self.ne(), self.e(), self.se(), self.s(), self.sw(), self.w(), self.nw()])
+
+        return filter(
+            nop1,
+            [
+                self.n(),
+                self.ne(),
+                self.e(),
+                self.se(),
+                self.s(),
+                self.sw(),
+                self.w(),
+                self.nw(),
+            ],
+        )
 
     def manhattan_distance(self, to):
         return abs(self.x - to.x) + abs(self.y - to.y)
@@ -49,7 +78,7 @@ class Point:
         return iter([self.x, self.y])
 
     def __repr__(self):
-        return f'({self.x}, {self.y})'
+        return f"({self.x}, {self.y})"
 
     def __set__(self, instance, value):
         print(self, instance, value)
@@ -101,6 +130,7 @@ class Point:
             o = o.get()
 
         return self.get() + o
+
     __radd__ = __add__
 
     def __sub__(self, o):
@@ -120,6 +150,7 @@ class Point:
             o = o.get()
 
         return self.get() * o
+
     __rmul__ = __mul__
 
     def __truediv__(self, o):
@@ -144,7 +175,7 @@ class Point:
         if isinstance(o, Point):
             o = o.get()
 
-        return o//self.get()
+        return o // self.get()
 
     def __mod__(self, o):
         if isinstance(o, Point):
@@ -211,6 +242,7 @@ class Point:
             o = o.get()
 
         return self.get() & o
+
     __rand__ = __and__
 
     def __xor__(self, o):
@@ -218,6 +250,7 @@ class Point:
             o = o.get()
 
         return self.get() ^ o
+
     __rxor__ = __xor__
 
     def __or__(self, o):
@@ -225,6 +258,7 @@ class Point:
             o = o.get()
 
         return self.get() | o
+
     __ror__ = __or__
 
     def __iadd__(self, o):
@@ -337,12 +371,15 @@ class Point:
 
     def __trunc__(self, digits):
         from math import trunc
+
         trunc(self.grid.data[self.y][self.x], digits)
 
     def __floor__(self, digits):
         from math import floor
+
         floor(self.grid.data[self.y][self.x], digits)
 
     def __ceil__(self, digits):
         from math import ceil
+
         ceil(self.grid.data[self.y][self.x], digits)

@@ -1,3 +1,6 @@
+from logging import debug
+
+
 def nop1(o):
     return o
 
@@ -7,12 +10,12 @@ def switch(*args, **kwargs):
     from collections import Mapping
     from .puzzle import lines
 
-    rere = re.compile(r'^/(.*)/$')
+    rere = re.compile(r"^/(.*)/$")
     loop = []
     lookup = {}
 
     if args and isinstance(args[0], Mapping):
-        for (k, f) in args[0].items():
+        for k, f in args[0].items():
             try:
                 match = rere.match(k)
                 regex = match.groups(1)
@@ -21,7 +24,7 @@ def switch(*args, **kwargs):
             except:
                 lookup[k] = f
 
-    for (k, f) in kwargs.items():
+    for k, f in kwargs.items():
         lookup[k] = f
 
     def run(input=None):
@@ -41,7 +44,7 @@ def switch(*args, **kwargs):
                 f(*args)
                 continue
 
-            for (k, f) in loop:
+            for k, f in loop:
                 match = k.match(key)
                 if match:
                     groups = match.groups()
@@ -57,7 +60,7 @@ def switch(*args, **kwargs):
 def windows(iterable, size):
     arr = list(iterable)
     for i in range(len(arr) - size + 1):
-        yield arr[i:i+size]
+        yield arr[i : i + size]
 
 
 def chunks(iterable, size, pad=None):
@@ -70,7 +73,7 @@ def chunks(iterable, size, pad=None):
         partial = 0
 
     for _ in range(complete):
-        yield arr[i:i+size]
+        yield arr[i : i + size]
         i += size
 
     if partial:

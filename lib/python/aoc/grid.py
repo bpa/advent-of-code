@@ -12,6 +12,10 @@ class Grid:
         self.height = len(data)
         self.width = len(data[0])
 
+    def clone(self):
+        copy = [r.copy() for r in self.data]
+        return Grid(copy, self.format, self.true, self.false)
+
     @classmethod
     def of(cls, w, h, default_value=None):
         return cls([[default_value for _ in range(w)] for _ in range(h)])
@@ -41,14 +45,15 @@ class Grid:
 
     def as_pandas(self):
         import pandas
+
         return pandas.DataFrame(self.data)
 
     def index(self, *items):
         """Find all points given, return a map of item: point"""
         keys = set(items)
         locations = {}
-        for (y, row) in enumerate(self.data):
-            for (x, value) in enumerate(row):
+        for y, row in enumerate(self.data):
+            for x, value in enumerate(row):
                 if value in keys:
                     locations[value] = Point(self, x, y)
         return locations
@@ -57,30 +62,35 @@ class Grid:
         # TODO: optimize with floodfill followed by lookups
         points = self.index(*items)
         dist = {key: {} for key in points.keys()}
-        for (i, start) in enumerate(items):
+        for i, start in enumerate(items):
             if start not in points:
                 continue
-            for j in range(i+1, len(items)):
+            for j in range(i + 1, len(items)):
                 end = items[j]
                 if end in points:
-                    d = len(self.shortest_path(
-                        points[start], points[end], wall=wall, neighbors=neighbors))
+                    d = len(
+                        self.shortest_path(
+                            points[start], points[end], wall=wall, neighbors=neighbors
+                        )
+                    )
                     dist[start][end] = d
                     dist[end][start] = d
         return dist
 
-    def shortest_path(self, a, b, wall='', neighbors=4, vertex_cost=lambda a, b: 1, distance=None):
+    def shortest_path(
+        self, a, b, wall="", neighbors=4, vertex_cost=lambda a, b: 1, distance=None
+    ):
         if distance == None:
             from .util import manhattan_distance as distance
         if neighbors == 4:
             adj = [(0, -1), (1, 0), (0, 1), (-1, 0)]
         elif neighbors == 8:
-            adj = [(0, -1), (1, -1), (1, 0), (1, 1),
-                   (0, 1), (-1, 1), (-1, 0), (-1, -1)]
+            adj = [(0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)]
         else:
             raise Exception("Invalid number of neighbors")
 
         import sys
+
         (G, CLOSED, PARENT_X, PARENT_Y) = range(4)
         nodes = []
         for y in range(self.width):
@@ -93,6 +103,7 @@ class Grid:
         start[G] = 0
 
         from heapq import heappop, heappush
+
         queue = [(0, a.x, a.y)]
         while queue:
             (_, x, y) = heappop(queue)
@@ -101,7 +112,7 @@ class Grid:
             if x == b.x and y == b.y:
                 break
 
-            for (dx, dy) in adj:
+            for dx, dy in adj:
                 nx = x + dx
                 if nx < 0 or nx >= self.width:
                     continue
@@ -190,17 +201,19 @@ class Grid:
         false = None
         if isinstance(self.data[0][0], bool):
             if self.true == None:
-                true = '#'
+                true = "#"
             if self.false == None:
-                false = '.'
+                false = "."
 
         if self.format == None:
             to_string = str
         else:
+
             def to_string(v):
                 return self.format.format(v)
 
         from io import StringIO
+
         repr = StringIO()
         repr.write("\n")
         for y in range(y0, y1):
