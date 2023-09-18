@@ -15,3 +15,4 @@ from .util import *
 from .string import *
 from .dist import *
 from .logging import *
+from .word_map import *
