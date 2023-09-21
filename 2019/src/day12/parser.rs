@@ -1,46 +1,28 @@
 use super::Coordinate;
-use nom::character::complete::{digit1, multispace0};
+use aoc::signed_int;
+use nom::{bytes::complete::tag, character::complete::multispace0, multi::many1, IResult};
 
-named!(signed_int<&str, isize>,
-    map_res!(
-        recognize!(
-            pair!(
-                opt!(alt!(tag!("+") | tag!("-"))),
-                digit1
-            )
-        )
-        , str::parse::<isize>
-    )
-);
+fn coord(input: &str) -> IResult<&str, Coordinate> {
+    let (input, _) = multispace0(input)?;
+    let (input, _) = tag("<x=")(input)?;
+    let (input, x) = signed_int(input)?;
+    let (input, _) = tag(", y=")(input)?;
+    let (input, y) = signed_int(input)?;
+    let (input, _) = tag(", z=")(input)?;
+    let (input, z) = signed_int(input)?;
+    let (input, _) = tag(">")(input)?;
+    let (input, _) = multispace0(input)?;
+    Ok((input, Coordinate { x: x, y: y, z: z }))
+}
 
-named!(point<&str, Coordinate>, 
-    do_parse!(
-        multispace0   >>
-        tag!("<x=")   >>
-        x: signed_int >>
-        tag!(", y=")  >> 
-        y: signed_int >> 
-        tag!(", z=")  >>
-        z: signed_int >>
-        tag!(">")     >>
-        multispace0   >>
-        (Coordinate { x: x, y: y, z: z })
-    )
-);
-
-named!(pub coordinates<&str, Vec<Coordinate>>,
-    many1!(complete!(point))
-);
+pub fn coordinates(input: &str) -> IResult<&str, Vec<Coordinate>> {
+    many1(coord)(input)
+}
 
 #[cfg(test)]
 mod test {
     use super::*;
 
-    #[test]
-    fn number() {
-        assert_eq!(signed_int("1"), Ok(("", 1)));
-        assert_eq!(signed_int("-1"), Ok(("", -1)));
-    }
     #[test]
     fn parsing() {
         assert_eq!(

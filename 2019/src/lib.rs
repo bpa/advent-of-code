@@ -2,9 +2,9 @@
 extern crate aoc_runner;
 #[macro_use]
 extern crate aoc_runner_derive;
-#[macro_use]
-extern crate nom;
+extern crate aoc;
 extern crate crypto;
+extern crate nom;
 extern crate num;
 extern crate priority_queue;
 
