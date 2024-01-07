@@ -37,7 +37,7 @@ pub fn part1((seeds, transitions): &(Vec<i64>, Vec<Vec<SeedMap>>)) -> i64 {
     seeds
         .iter()
         .map(|s| {
-            transitions.into_iter().fold(*s, |seed, t| {
+            transitions.iter().fold(*s, |seed, t| {
                 for sm in t {
                     if seed >= sm.start && seed <= sm.end {
                         return seed + sm.diff;
@@ -56,8 +56,8 @@ pub fn part2((seeds, transitions): &(Vec<i64>, Vec<Vec<SeedMap>>)) -> i64 {
     let mut seeds: VecDeque<(usize, i64, i64)> =
         seeds.chunks(2).map(|r| (0, r[0], r[0] + r[1])).collect();
     while let Some((g, mut start, mut end)) = seeds.pop_back() {
-        for i in g..transitions.len() {
-            for t in &transitions[i] {
+        for (i, seed_maps) in transitions.iter().enumerate().skip(g) {
+            for t in seed_maps {
                 if start >= t.start && start <= t.end {
                     if end <= t.end {
                         start += t.diff;

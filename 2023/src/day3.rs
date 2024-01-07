@@ -66,7 +66,7 @@ fn adjacent(point: Point2D<GridEntry>) -> Vec<u32> {
 pub fn part1(grid: &Grid<GridEntry>) -> u32 {
     grid.points()
         .filter(|p| matches!(p.get(), GridEntry::Symbol(_)))
-        .flat_map(|p| adjacent(p))
+        .flat_map(adjacent)
         .sum()
 }
 
@@ -80,7 +80,7 @@ pub fn part2(grid: &Grid<GridEntry>) -> u32 {
                 false
             }
         })
-        .map(|p| adjacent(p))
+        .map(adjacent)
         .filter_map(|parts| {
             if parts.len() == 2 {
                 Some(parts[0] * parts[1])

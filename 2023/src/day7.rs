@@ -4,8 +4,7 @@ fn strength(input: &&str) -> [i32; 6] {
     let mut copies = [0; 6];
     let mut last = hand[0];
     let mut cnt = 0;
-    for i in 1..5 {
-        let c = hand[i];
+    for c in hand.into_iter().skip(1).take(4) {
         if c == last {
             cnt += 1;
         } else {
@@ -52,8 +51,7 @@ fn strength_jacks_wild(input: &&str) -> [i32; 6] {
     let mut last = hand[0];
     let mut cnt = 0;
     let mut jacks = 0;
-    for i in 1..5 {
-        let c = hand[i];
+    for &c in hand.iter().skip(1).take(4) {
         if c == last {
             cnt += 1;
         } else if last == b'J' {

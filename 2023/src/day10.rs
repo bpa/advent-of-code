@@ -24,7 +24,7 @@ pub fn parse(input: &str) -> Grid<usize> {
 
 const START_PIPE: [[usize; 3]; 4] = [[0, 4, 5], [1, 3, 4], [0, 2, 3], [1, 2, 5]];
 fn start(p: Point2D<usize>) -> (usize, Point2D<usize>) {
-    for (d, &(dx, dy)) in CARDINAL_4.into_iter().enumerate() {
+    for (d, &(dx, dy)) in CARDINAL_4.iter().enumerate() {
         if let Some(n) = p.neighbor(dx, dy) {
             let pipe = n.get();
             if START_PIPE[d].iter().any(|&s| s == pipe) {
@@ -67,7 +67,7 @@ pub fn part2(input: &Grid<usize>) -> isize {
     let mut p = pipes[y][x];
     let mut steps = 1;
     loop {
-        if (p >= 2 && p <= 5) || p == b'S' as usize {
+        if (2..=5).contains(&p) || p == b'S' as usize {
             area += (x0 * y) as isize;
             area -= (x * y0) as isize;
             x0 = x;

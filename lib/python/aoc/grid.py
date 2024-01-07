@@ -25,6 +25,7 @@ class Grid:
         return x >= 0 and x < self.width and y >= 0 and y < self.height
 
     def at(self, x, y):
+        """Get the Point at x, y"""
         return Point(self, x, y)
 
     def get(self, x, y):
@@ -58,7 +59,7 @@ class Grid:
                     locations[value] = Point(self, x, y)
         return locations
 
-    def distances(self, wall, *items, neighbors=4):
+    def distances(self, wall, *items, neighbors=4) -> dict[str, dict[str, int]]:
         # TODO: optimize with floodfill followed by lookups
         points = self.index(*items)
         dist = {key: {} for key in points.keys()}
@@ -208,9 +209,7 @@ class Grid:
         if self.format == None:
             to_string = str
         else:
-
-            def to_string(v):
-                return self.format.format(v)
+            to_string = self.format
 
         from io import StringIO
 
@@ -231,6 +230,11 @@ class Grid:
                         repr.write(to_string(value))
             repr.write("\n")
         return repr.getvalue()
+
+    def iter_reverse(self):
+        for y in range(self.height - 1, -1, -1):
+            for x in range(self.width - 1, -1, -1):
+                yield Point(self, x, y)
 
     def __str__(self):
         return self.to_string()

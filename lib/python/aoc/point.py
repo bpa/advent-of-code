@@ -47,6 +47,18 @@ class Point:
     def nw(self):
         return self.neighbor(-1, -1)
 
+    def on_4(self, dir):
+        match dir:
+            case 0:
+                return self.n()
+            case 1:
+                return self.e()
+            case 2:
+                return self.s()
+            case 3:
+                return self.w()
+        return None
+
     def adjacent_4(self):
         """Get the n, e, s, w adjacent points"""
         from .func import nop1
@@ -120,7 +132,7 @@ class Point:
         return self.get() >= o
 
     def __hash__(self):
-        return self.x * 181 + self.y
+        return self.x * 199933 + self.y
 
     def __bool__(self):
         return bool(self.grid.data[self.y][self.x])

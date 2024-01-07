@@ -40,7 +40,7 @@ fn grab(input: &str) -> IResult<&str, StoneGrab> {
 }
 
 fn game(input: &str) -> IResult<&str, Vec<StoneGrab>> {
-    let (input, __) = take_until(":")(input)?;
+    let (input, _) = take_until(":")(input)?;
     let (input, _) = tag(":")(input)?;
     many0(grab)(input)
 }
@@ -51,7 +51,7 @@ pub fn parse(input: &str) -> Vec<Vec<StoneGrab>> {
 }
 
 #[aoc(day2, part1)]
-pub fn part1(input: &Vec<Vec<StoneGrab>>) -> usize {
+pub fn part1(input: &[Vec<StoneGrab>]) -> usize {
     input
         .iter()
         .enumerate()
@@ -70,7 +70,7 @@ pub fn part1(input: &Vec<Vec<StoneGrab>>) -> usize {
 }
 
 #[aoc(day2, part2)]
-pub fn part2(input: &Vec<Vec<StoneGrab>>) -> u32 {
+pub fn part2(input: &[Vec<StoneGrab>]) -> u32 {
     input
         .iter()
         .map(|game| {

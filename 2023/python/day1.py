@@ -2,8 +2,6 @@
 
 from aoc import *
 
-# 54649
-
 
 def part1(input: str):
     total = 0
@@ -51,5 +49,3 @@ def part2(input: str):
 
 if __name__ == "__main__":
     main()
-
-# 54627

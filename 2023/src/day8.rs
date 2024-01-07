@@ -90,14 +90,14 @@ pub fn part2(input: &str) -> u64 {
     map.nodes
         .iter()
         .filter_map(|mut n| {
-            if !n.name.ends_with("A") {
+            if !n.name.ends_with('A') {
                 return None;
             }
             let mut steps: u64 = 0;
             for dir in map.directions.chars().cycle() {
                 steps += 1;
                 n = if dir == 'R' { &map[n.r] } else { &map[n.l] };
-                if n.name.ends_with("Z") {
+                if n.name.ends_with('Z') {
                     return Some(steps);
                 }
             }

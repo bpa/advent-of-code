@@ -15,13 +15,13 @@ fn ints(input: &str) -> IResult<&str, Vec<u32>> {
 pub fn part1(input: &str) -> usize {
     input
         .lines()
-        .map(|l| l.split(":").nth(1).unwrap())
+        .map(|l| l.split(':').nth(1).unwrap())
         .map(|l| {
             let sets = l
-                .split("|")
+                .split('|')
                 .map(ints)
                 .map(|x| x.unwrap().1)
-                .map(|x| HashSet::from_iter(x))
+                .map(HashSet::from_iter)
                 .collect::<Vec<HashSet<u32>>>();
             let exp = sets[0].intersection(&sets[1]).count() as u32;
             2usize.pow(exp - 1)
@@ -33,13 +33,13 @@ pub fn part1(input: &str) -> usize {
 pub fn part2(input: &str) -> usize {
     let mut cards = input
         .lines()
-        .map(|l| l.split(":").nth(1).unwrap())
+        .map(|l| l.split(':').nth(1).unwrap())
         .map(|l| {
             let sets = l
-                .split("|")
+                .split('|')
                 .map(ints)
                 .map(|x| x.unwrap().1)
-                .map(|x| HashSet::from_iter(x))
+                .map(HashSet::from_iter)
                 .collect::<Vec<HashSet<u32>>>();
             sets[0].intersection(&sets[1]).count()
         })

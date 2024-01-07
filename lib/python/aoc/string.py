@@ -23,7 +23,7 @@ def delimit(line, delimiter, map=None):
         return [map(i) for i in line.split(delimiter)]
 
 
-def delimited(input, delimiter=" ", map=None):
+def delimited(input, delimiter=None, map=None):
     if map == None:
         for line in input.splitlines():
             yield line.split(delimiter)

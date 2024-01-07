@@ -34,7 +34,6 @@ def part2(input: str):
             for cube in draw.split(", "):
                 n, color = cube.split()
                 maxs[color] = max(maxs[color], int(n))
-        debug(maxs)
         x = 1
         for y in maxs.values():
             x *= y

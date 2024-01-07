@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from datetime import datetime
-from platform import system
 import sys
 import os
 from pathlib import Path
@@ -15,28 +14,32 @@ from watchdog.events import FileSystemEventHandler
 
 
 def fetch_input(year, day):
-    Path(f'input/{year}').mkdir(parents=True, exist_ok=True)
-    if not os.path.exists(f'input/{year}/day{day}.test'):
-        with open(f'input/{year}/day{day}.test', 'w'):
+    Path(f"input/{year}").mkdir(parents=True, exist_ok=True)
+    if not os.path.exists(f"input/{year}/day{day}.test"):
+        with open(f"input/{year}/day{day}.test", "w"):
             pass
 
-    now = datetime.now(timezone('est'))
-    start = datetime(int(year), 12, int(day), tzinfo=timezone('est'))
+    now = datetime.now(timezone("est"))
+    start = datetime(int(year), 12, int(day), tzinfo=timezone("est"))
     if now < start:
         time.sleep((start - now).total_seconds() + 30)
-    if not os.path.exists(f'input/{year}/day{day}.txt'):
-        subprocess.run(f'cargo aoc input -y {year} -d {day}', shell=True)
+    if not os.path.exists(f"input/{year}/day{day}.txt"):
+        subprocess.run(f"cargo aoc input -y {year} -d {day}", shell=True)
 
 
 class Handler(FileSystemEventHandler):
-    def __init__(self, year, day, run):
-        self.input = f'../input/{year}/day{day}.txt'
-        self.test_input = f'../input/{year}/day{day}.test'
+    def __init__(self, year, day, input, run):
+        self.input = f"{input}/{year}/day{day}.txt"
+        self.test_input = f"{input}/{year}/day{day}.test"
         self.run = run
         self.debounce = {}
 
     def on_modified(self, event):
-        if event.is_directory or '__pycache__' in event.src_path or event.src_path[-4:] in ['.tmp', '.swp']:
+        if (
+            event.is_directory
+            or "__pycache__" in event.src_path
+            or event.src_path[-4:] in [".tmp", ".swp"]
+        ):
             return
 
         try:
@@ -48,54 +51,104 @@ class Handler(FileSystemEventHandler):
         if modified - last_modified < 1:
             return
         self.debounce[event.src_path] = modified
-        os.system('clear')
+        os.system("clear")
         try:
             if os.path.getsize(self.test_input) > 0:
-                os.environ['DEBUG'] = 'true'
-                subprocess.run(
-                    f'{self.run} {self.test_input}', shell=True)
-                os.environ.pop('DEBUG')
+                os.environ["DEBUG"] = "true"
+                os.environ["RUST_LOG"] = "debug"
+                subprocess.run(f"{self.run} {self.test_input}", shell=True)
+                os.environ.pop("DEBUG")
+                os.environ.pop("RUST_LOG")
                 print("\n----\n")
         except:
             pass
-        subprocess.run(f'{self.run} {self.input}', shell=True)
+        subprocess.run(f"pwd", shell=True)
+        subprocess.run(f"{self.run} {self.input}", shell=True)
 
 
 def command_python(day):
-    libdir = Path(__file__).parent.resolve() / 'lib/python'
-    os.environ['PYTHONPATH'] = str(libdir)
+    libdir = Path(__file__).parent.resolve() / "lib/python"
+    os.environ["PYTHONPATH"] = str(libdir)
 
-    return f'python3 day{day}.py'
+    return f"python3 day{day}.py"
 
 
 def command_rust(day):
-    return f'cargo aoc -d {day} -i'
+    return f"cargo -q aoc -d {day} -i"
 
 
 def command_go(day):
-    return f'go run day{day}.go'
+    return f"go run day{day}.go"
+
+
+def write_template(src, dest, year, day):
+    if Path(dest).exists():
+        return
+
+    templatedir = Path(__file__).parent.resolve() / "templates"
+    with open(templatedir / src) as f:
+        template = Template(f.read())
+    with open(dest, "w") as file:
+        file.write(template.substitute(day=day, year=year))
+
+
+def skip_mod_line(day, line):
+    """Replicate the asciibetical sort for mods"""
+    if "mod" in line:
+        i = line.index("day")
+        if i > -1:
+            return day > line[i + 3 : -2]
+        return True
+    return False
+
+
+def setup_rust(year, day):
+    write_template("Cargo.toml", "Cargo.toml", year, day)
+    write_template("main.rs", "src/main.rs", year, day)
+    write_template("lib.rs", "src/lib.rs", year, day)
+    with open("src/lib.rs") as f:
+        lines = f.readlines()
+
+    if any(filter(lambda l: f"mod day{day};" in l, lines)):
+        return
+
+    with open("src/lib.rs", "w") as f:
+        lines = iter(lines)
+        while True:
+            l = next(lines)
+            if "aoc_lib!" in l or "pub mod" in l:
+                break
+            f.write(l)
+
+        mod = f"pub mod day{day};\n"
+        if "aoc_lib!" in l:
+            f.write(mod)
+            f.write("\n")
+        else:
+            while skip_mod_line(day, l):
+                f.write(l)
+                l = next(lines)
+            f.write(mod)
+
+        f.write(l)
+        f.writelines(lines)
 
 
 LANG = {
-    "go": ['go', 'go'],
-    "python": ['py', 'python'],
-    "rust": ['rs', 'src'],
+    "go": ["go", "go", True],
+    "python": ["py", "python", True],
+    "rust": ["rs", "src", False],
 }
 
 
 def write_day_template(lang, year, day):
-    (ext, dir) = LANG[lang]
-    templatedir = Path(__file__).parent.resolve() / 'templates'
-    script = f'{dir}/day{day}.{ext}'
-    if not Path(script).exists():
-        with open(templatedir/f'template.{ext}') as f:
-            template = Template(f.read())
-        with open(script, 'w') as file:
-            file.write(template.substitute(day=day, year=year))
+    (ext, dir, _) = LANG[lang]
+    script = f"{dir}/day{day}.{ext}"
+    write_template(f"template.{ext}", script, year, day)
 
 
-if __name__ == '__main__':
-    languages = sorted([l[8:] for l in globals() if l.startswith('command_')])
+if __name__ == "__main__":
+    languages = sorted([l[8:] for l in globals() if l.startswith("command_")])
     if len(sys.argv) < 3 or sys.argv[2] not in languages:
         print(f"Usage: {sys.argv[0]} <day> <lang>")
         print(f"  Supported languages: {languages}")
@@ -105,17 +158,26 @@ if __name__ == '__main__':
     lang = sys.argv[2]
 
     write_day_template(lang, year, day)
+    if setup := globals().get(f"setup_{lang}"):
+        setup(year, day)
     fetch_input(year, day)
 
-    libdir = Path(__file__).parent.resolve() / f'lib/{lang}'
+    libdir = Path(__file__).parent.resolve() / f"lib/{lang}"
 
-    os.chdir(LANG[lang][1])
+    if LANG[lang][2]:
+        os.chdir(LANG[lang][1])
+        src_dir = "."
+        input = "../input"
+    else:
+        src_dir = LANG[lang][1]
+        input = "input"
+
     observer = Observer()
-    cmd = globals()[f'command_{lang}'](day)
-    handler = Handler(year, day, cmd)
-    observer.schedule(handler, '.', recursive=True)
+    cmd = globals()[f"command_{lang}"](day)
+    handler = Handler(year, day, input, cmd)
+    observer.schedule(handler, src_dir, recursive=True)
     observer.schedule(handler, str(libdir), recursive=True)
-    observer.schedule(handler, f'../input/{year}/day{day}.test')
+    observer.schedule(handler, f"{input}/{year}/day{day}.test")
     observer.start()
     print("Watching for events")
 
