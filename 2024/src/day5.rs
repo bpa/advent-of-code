@@ -5,22 +5,6 @@ use std::{
 
 type Rulebook = HashMap<usize, HashSet<usize>>;
 
-fn is_valid(pages: &Vec<usize>, rules: &Rulebook) -> bool {
-    for i in 0..pages.len() - 1 {
-        match rules.get(&pages[i]) {
-            Some(after) => {
-                for n in &pages[i + 1..] {
-                    if !after.contains(n) {
-                        return false;
-                    }
-                }
-            }
-            None => return false,
-        }
-    }
-    true
-}
-
 #[aoc_generator(day5)]
 pub fn parse(input: &str) -> (Rulebook, Vec<Vec<usize>>) {
     let mut parts = input.split("\n\n");
@@ -60,6 +44,12 @@ pub fn part2((rules, pages): &(Rulebook, Vec<Vec<usize>>)) -> usize {
         .map(|nums| order(nums, rules))
         .map(|nums| nums[nums.len() / 2])
         .sum()
+}
+
+fn is_valid(pages: &Vec<usize>, rules: &Rulebook) -> bool {
+    pages
+        .windows(2)
+        .all(|pair| rules.get(&pair[0]).is_some_and(|r| r.contains(&pair[1])))
 }
 
 fn order(pages: &Vec<usize>, rules: &Rulebook) -> Vec<usize> {
