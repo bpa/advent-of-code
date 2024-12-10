@@ -33,42 +33,43 @@ pub fn part1(input: &str) -> u64 {
 pub fn part2(input: &str) -> u64 {
     input
         .lines()
-        // .filter(|l| l.starts_with("7290:"))
         .map(|l| l.split_ascii_whitespace().collect())
         .map(calibration_with_concatination)
         .filter(|n| *n > 0)
-        .inspect(|v| debug!("Success: {}", v))
         .sum()
 }
 
 fn calibration_with_concatination(mut inputs: Vec<&str>) -> u64 {
-    let mut stack = Vec::with_capacity(4096);
+    let mut stack = Vec::with_capacity(32);
     inputs[0] = &inputs[0][..inputs[0].len() - 1];
     let nums: Vec<u64> = inputs.iter().map(|s| s.parse::<u64>().unwrap()).collect();
     let test_value = nums[0];
-    stack.push((nums[1], 2));
-    // debug!("{:?}", nums);
+    stack.push((test_value, nums.len() - 1));
     while let Some(next) = stack.pop() {
-        // debug!("{:?}", next);
-        if next.0 > test_value {
-            continue;
-        }
-        if nums.len() == next.1 {
-            match test_value == next.0 {
+        if next.1 == 1 {
+            match next.0 == nums[next.1] {
                 true => return test_value,
                 false => continue,
             }
         }
-        let mut cat_str = next.0.to_string();
-        cat_str.push_str(inputs[next.1]);
-        stack.push((cat_str.parse::<u64>().unwrap(), next.1 + 1));
-        stack.push((next.0 * nums[next.1], next.1 + 1));
-        stack.push((next.0 + nums[next.1], next.1 + 1));
-        // let cat_value = cat_str.parse::<u64>().unwrap();
-        // let this_value = nums[0].parse::<u64>().unwrap();
-        // calibration_with_concatination(test_value, &cat_str, cat_value, sub)
-        //     || calibration_with_concatination(test_value, nums[0], this_value * next_value, sub)
-        //     || calibration_with_concatination(test_value, nums[0], this_value + next_value, sub)
+        if next.0 < nums[next.1] {
+            continue;
+        }
+        if let Some(x) = next.0.checked_sub(nums[next.1]) {
+            stack.push((x, next.1 - 1));
+        }
+
+        if next.0 % nums[next.1] == 0 {
+            stack.push((next.0 / nums[next.1], next.1 - 1));
+        }
+
+        let cat_str = next.0.to_string();
+        if cat_str.ends_with(inputs[next.1]) {
+            let next_str = &cat_str[..cat_str.len() - inputs[next.1].len()];
+            if !next_str.is_empty() {
+                stack.push((next_str.parse::<u64>().unwrap(), next.1 - 1));
+            }
+        }
     }
     0
 }
