@@ -1,4 +1,7 @@
-use std::cmp::min;
+use std::{
+    cmp::{Reverse, min},
+    collections::BinaryHeap,
+};
 
 use nom::AsChar;
 
@@ -46,38 +49,56 @@ pub fn part1(input: &str) -> u64 {
     answer
 }
 
+#[derive(Debug)]
+struct File {
+    pos: usize,
+    size: usize,
+    id: u64,
+}
+
 #[aoc(day9, part2)]
 pub fn part2(input: &str) -> u64 {
-    let mut free_space = Vec::with_capacity(10_240);
-    let mut files = Vec::with_capacity(10_240);
-    let mut it = input.chars().map(|c| c.to_digit(10).unwrap() as u64);
-    let mut pos = it.next().unwrap();
+    let mut blocks: [BinaryHeap<Reverse<usize>>; 10] =
+        std::array::from_fn(|_| BinaryHeap::with_capacity(3072));
+    let mut pos = 0;
     let mut id = 0;
-    files.push((0, pos, id));
-    while let Some(b) = it.next() {
-        free_space.push((pos, b));
-        pos += b;
-        id += 1;
-        let next = it.next().unwrap();
-        files.push((pos, next, id));
-        pos += next;
-    }
-    for i in (0..files.len()).rev() {
-        let file = &mut files[i];
-        for j in free_space.iter_mut() {
-            if j.0 > file.0 {
-                break;
+    let disk: Vec<File> = input
+        .chars()
+        .enumerate()
+        .map(|(i, c)| {
+            let size = c.to_digit(10).unwrap() as usize;
+            let val = File { pos, size, id };
+            pos += size;
+            if i % 2 == 1 {
+                id += 1;
             }
-            if j.1 >= file.1 {
-                file.0 = j.0;
-                j.0 += file.1;
-                j.1 -= file.1;
-                break;
+            val
+        })
+        .collect();
+    for space in disk.iter().skip(1).step_by(2) {
+        blocks[space.size].push(Reverse(space.pos));
+    }
+
+    let mut ans = 0;
+    for file in disk.iter().step_by(2).rev() {
+        let next = blocks
+            .iter_mut()
+            .enumerate()
+            .skip(file.size)
+            .filter_map(|s| s.1.peek().and_then(|v| Some((s.0, *v))))
+            .min_by_key(|o| o.1.0);
+        let mut moved_pos = file.pos as u64;
+        if let Some(space) = next {
+            if space.1.0 < file.pos {
+                moved_pos = space.1.0 as u64;
+                blocks[space.0].pop();
+                let remaining = space.0 - file.size;
+                if remaining > 0 {
+                    blocks[remaining].push(Reverse(space.1.0 + file.size));
+                }
             }
         }
+        ans += file.size as u64 * (2 * file.id * moved_pos + (file.size - 1) as u64 * file.id) / 2;
     }
-    files
-        .iter()
-        .map(|f| f.1 * (2 * f.0 * f.2 + (f.1 - 1) * f.2) / 2)
-        .sum()
+    ans
 }
