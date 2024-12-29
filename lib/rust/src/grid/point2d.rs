@@ -15,6 +15,15 @@ pub struct Point2D<T> {
     pub(super) grid: Weak<GridData<T>>,
 }
 
+impl<T> Point2D<T> {
+    /// Get distance to other point.
+    /// Ignores obstacles
+    pub fn manhattan_distance(&self, other: &Point2D<T>) -> usize {
+        (self.x as isize - other.x as isize).unsigned_abs()
+            + (self.y as isize - other.y as isize).unsigned_abs()
+    }
+}
+
 impl<T> Clone for Point2D<T> {
     fn clone(&self) -> Self {
         Self {
@@ -40,14 +49,7 @@ impl<T> Hash for Point2D<T> {
     }
 }
 
-impl<T: Copy> Point2D<T> {
-    /// Get distance to other point.
-    /// Ignores obstacles
-    pub fn manhattan_distance(&self, other: &Point2D<T>) -> usize {
-        (self.x as isize - other.x as isize).unsigned_abs()
-            + (self.y as isize - other.y as isize).unsigned_abs()
-    }
-
+impl<T> Point2D<T> {
     /// Get point relative to current point
     pub fn neighbor(&self, x: isize, y: isize) -> Option<Point2D<T>> {
         let grid = self.grid.upgrade()?;
@@ -55,6 +57,23 @@ impl<T: Copy> Point2D<T> {
         let ny = usize::try_from(self.y as isize + y).ok()?;
         let row = data.get(ny)?;
         let nx = usize::try_from(self.x as isize + x).ok()?;
+        if nx >= row.len() {
+            return None;
+        }
+        Some(Point2D {
+            x: nx,
+            y: ny,
+            grid: Weak::clone(&self.grid),
+        })
+    }
+
+    pub fn to_dir(&self, dir: usize) -> Option<Point2D<T>> {
+        let grid = self.grid.upgrade()?;
+        let data = grid.data.borrow();
+        let dir = grid.neighbors[dir];
+        let ny = usize::try_from(self.y as isize + dir.1).ok()?;
+        let row = data.get(ny)?;
+        let nx = usize::try_from(self.x as isize + dir.0).ok()?;
         if nx >= row.len() {
             return None;
         }
@@ -106,7 +125,9 @@ impl<T: Copy> Point2D<T> {
             .filter_map(|(x, y)| self.neighbor(*x, *y))
             .collect()
     }
+}
 
+impl<T: Copy> Point2D<T> {
     pub fn get(&self) -> T {
         self.grid.upgrade().unwrap().data.borrow()[self.y][self.x]
     }

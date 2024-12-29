@@ -64,7 +64,7 @@ impl Grid<u32> {
     }
 }
 
-impl<T: Default> Grid<T> {
+impl<T> Grid<T> {
     pub fn parse_str(value: &str, f: fn(u8) -> T) -> Grid<T> {
         Grid::parse_bytes(value.as_bytes(), f)
     }
@@ -105,7 +105,9 @@ impl<T: Default> Grid<T> {
             }),
         }
     }
+}
 
+impl<T: Default> Grid<T> {
     pub fn set_neighbors(&mut self, n: Neighbors) {
         match n {
             Neighbors::Four => Rc::get_mut(&mut self.data).unwrap().neighbors = CARDINAL_4,

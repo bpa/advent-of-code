@@ -33,12 +33,6 @@ impl<T> Grid<T> {
         self.data.data.borrow()
     }
 
-    pub fn data_mut(&self) -> RefMut<Vec<Vec<T>>> {
-        self.data.data.borrow_mut()
-    }
-}
-
-impl<T: Clone + Copy> Grid<T> {
     pub fn at(&self, x: usize, y: usize) -> Option<Point2D<T>> {
         if x < self.data.width && y < self.data.height {
             return Some(Point2D {
@@ -50,6 +44,24 @@ impl<T: Clone + Copy> Grid<T> {
         None
     }
 
+    pub fn data_mut(&self) -> RefMut<Vec<Vec<T>>> {
+        self.data.data.borrow_mut()
+    }
+
+    pub fn height(&self) -> usize {
+        self.data.height
+    }
+
+    pub fn width(&self) -> usize {
+        self.data.width
+    }
+
+    pub fn into_inner(self) -> Vec<Vec<T>> {
+        Rc::into_inner(self.data).unwrap().data.into_inner()
+    }
+}
+
+impl<T: Clone + Copy> Grid<T> {
     pub fn get(&self, x: usize, y: usize) -> Option<T> {
         if x < self.data.width && y < self.data.height {
             return Some(self.data.data.borrow()[y][x]);
@@ -64,7 +76,7 @@ impl<T: Clone + Copy> Grid<T> {
     }
 }
 
-impl<T: Copy + Display> Display for Grid<T> {
+impl<T: Display> Display for Grid<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for row in self.data.data.borrow().iter() {
             for c in row {

@@ -3,15 +3,11 @@ use std::cmp::max;
 use crate::CellType;
 
 pub fn manhattan_distance(x0: usize, y0: usize, x1: usize, y1: usize) -> usize {
-    let l = if x0 > x1 { x0 - x1 } else { x1 - x0 };
-    let r: usize = if y0 > y1 { y0 - y1 } else { y1 - y0 };
-    l + r
+    x1.abs_diff(x0) + y1.abs_diff(y0)
 }
 
 pub fn manhattan_distance_with_corners(x0: usize, y0: usize, x1: usize, y1: usize) -> usize {
-    let l = if x0 > x1 { x0 - x1 } else { x1 - x0 };
-    let r: usize = if y0 > y1 { y0 - y1 } else { y1 - y0 };
-    max(l, r)
+    max(x1.abs_diff(x0), y1.abs_diff(y0))
 }
 
 pub fn equal_cost<T>(_: usize, _: usize, _: T, _: usize, _: usize, _: T) -> usize {
