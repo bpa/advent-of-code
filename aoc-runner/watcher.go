@@ -58,10 +58,10 @@ func StartWatcher(lang language.Language, year int, day int) {
 	stop()
 }
 
-// StartWatch watches the provided paths (files or directories) and calls onChange(useTest)
-// after a short debounce when modifications are detected. If testInputPath is non-empty
-// and its file size is >0 when the debounce fires, onChange is called with useTest=true.
-// Returns a stop function to terminate the watcher.
+// StartWatch watches the provided paths (files or directories) and calls onChange()
+// immediately when modifications are detected. After onChange() fires, a quiet period
+// of 600ms begins where subsequent changes are ignored. Returns a stop function to
+// terminate the watcher.
 func StartWatch(paths []string, onChange func()) (func(), error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -69,24 +69,24 @@ func StartWatch(paths []string, onChange func()) (func(), error) {
 	}
 
 	var debounceMu sync.Mutex
-	var debounceTimer *time.Timer
+	var quietUntil time.Time
 
-	resetDebounce := func() {
+	shouldIgnore := func() bool {
 		debounceMu.Lock()
 		defer debounceMu.Unlock()
-		if debounceTimer != nil {
-			debounceTimer.Stop()
-		}
-		debounceTimer = time.AfterFunc(600*time.Millisecond, func() {
-			onChange()
-		})
+		return time.Now().Before(quietUntil)
+	}
+
+	markQuiet := func() {
+		debounceMu.Lock()
+		defer debounceMu.Unlock()
+		quietUntil = time.Now().Add(600 * time.Millisecond)
 	}
 
 	for _, p := range paths {
 		if p == "" {
 			continue
 		}
-		fmt.Println(p)
 		if err := watcher.Add(p); err != nil {
 			parent := filepath.Dir(p)
 			if parent != "" {
@@ -102,7 +102,6 @@ func StartWatch(paths []string, onChange func()) (func(), error) {
 		for {
 			select {
 			case ev, ok := <-watcher.Events:
-				fmt.Printf("%v\n", ev)
 				if !ok {
 					return
 				}
@@ -112,7 +111,11 @@ func StartWatch(paths []string, onChange func()) (func(), error) {
 				if ignorePath(ev.Name) {
 					continue
 				}
-				resetDebounce()
+				// Fire immediately if not in quiet period
+				if !shouldIgnore() {
+					onChange()
+					markQuiet()
+				}
 			case err, ok := <-watcher.Errors:
 				if !ok {
 					return
