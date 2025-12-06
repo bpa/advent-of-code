@@ -1,4 +1,8 @@
+# Eric Wastle has requested not to check in problem inputs
 input
+
+.session
+*.exe
 
 # Alternate inputs
 **/code_and_share/
@@ -18,6 +22,7 @@ Cargo.lock
 __pycache__/
 *.py[cod]
 *$py.class
+%SystemDrive%
 
 # C extensions
 *.so

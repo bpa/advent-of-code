@@ -8,29 +8,42 @@ from pytz import timezone
 from string import Template
 import time
 import subprocess
+import requests
+from requests.cookies import RequestsCookieJar
 from pathlib import Path
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 
 def fetch_input(year, day):
-    Path(f"input/{year}").mkdir(parents=True, exist_ok=True)
-    if not os.path.exists(f"input/{year}/day{day}.test"):
-        with open(f"input/{year}/day{day}.test", "w"):
+    Path(f"input/").mkdir(parents=True, exist_ok=True)
+    if not os.path.exists(f"input/day{day}.test"):
+        with open(f"input/day{day}.test", "w"):
             pass
 
     now = datetime.now(timezone("est"))
     start = datetime(int(year), 12, int(day), tzinfo=timezone("est"))
     if now < start:
         time.sleep((start - now).total_seconds() + 30)
-    if not os.path.exists(f"input/{year}/day{day}.txt"):
-        subprocess.run(f"cargo aoc input -y {year} -d {day}", shell=True)
+    if not os.path.exists(f"input/day{day}.txt"):
+        jar = RequestsCookieJar()
+        session = Path(__file__).parent.resolve() / ".session"
+        with session.open() as f:
+            session = f.read().strip()
+        jar.set("session", session, domain="adventofcode.com", path="/")
+        url = f"https://adventofcode.com/{year}/day/{day}/input"
+        response = requests.get(url, cookies=jar)
+        if response.status_code != 200:
+            print(f"Error fetching input: {response.status_code}")
+            sys.exit(1)
+        with open(f"input/day{day}.txt", "w") as f:
+            f.write(response.text)
 
 
 class Handler(FileSystemEventHandler):
     def __init__(self, year, day, input, run):
-        self.input = f"{input}/{year}/day{day}.txt"
-        self.test_input = f"{input}/{year}/day{day}.test"
+        self.input = f"{input}/day{day}.txt"
+        self.test_input = f"{input}/day{day}.test"
         self.run = run
         self.debounce = {}
 
