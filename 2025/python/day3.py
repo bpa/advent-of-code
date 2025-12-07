@@ -27,7 +27,6 @@ def part2(input: str):
             joltage *= 10
             joltage += l
             start += curr.index(l) + 1
-        debug(joltage)
         sum += joltage
     return sum
 

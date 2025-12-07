@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/bpa/aoc"
 	"strings"
+
+	"github.com/bpa/aoc"
 )
 
 func day1Part1(input string) int {

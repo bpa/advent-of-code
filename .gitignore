@@ -3,6 +3,7 @@ input
 
 .session
 *.exe
+*.exe~
 
 # Alternate inputs
 **/code_and_share/
