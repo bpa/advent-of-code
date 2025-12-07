@@ -20,7 +20,7 @@ func lines() []string {
 }
 
 func ToInt(a string) int {
-	if v, err := strconv.Atoi(a); err == nil {
+	if v, err := strconv.Atoi(strings.TrimSpace(a)); err == nil {
 		return v
 	}
 	return 0

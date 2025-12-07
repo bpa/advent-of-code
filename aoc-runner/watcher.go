@@ -15,7 +15,6 @@ import (
 )
 
 func RunCommand(name string, args, env []string) error {
-	fmt.Printf("%s %v\n", name, args)
 	cmd := exec.Command(name, args...)
 	cmd.Env = env
 	cmd.Stdout = os.Stdout
@@ -39,7 +38,7 @@ func StartWatcher(lang Language, year int, day int) {
 
 		if info, err := os.Stat(lang.TestFile); err == nil && info.Size() > 0 {
 			RunCommand(lang.Cmd, lang.TestArgs, lang.TestEnv)
-			fmt.Println("-----")
+			fmt.Println("-----\r")
 		}
 		RunCommand(lang.Cmd, lang.RunArgs, lang.RunEnv)
 	})
