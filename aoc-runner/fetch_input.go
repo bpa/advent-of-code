@@ -11,12 +11,11 @@ import (
 )
 
 func FetchInput(year int, day int) error {
-	inputDir := filepath.Join("..", strconv.Itoa(year), "input")
+	inputDir := filepath.Join("input", strconv.Itoa(year))
 	if err := os.MkdirAll(inputDir, 0o755); err != nil {
 		return err
 	}
 
-	// Ensure a .test file exists (empty) next to input
 	testPath := filepath.Join(inputDir, fmt.Sprintf("day%d.test", day))
 	if _, err := os.Stat(testPath); os.IsNotExist(err) {
 		if f, err := os.Create(testPath); err == nil {

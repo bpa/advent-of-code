@@ -5,21 +5,19 @@ import (
 	"os"
 	"path/filepath"
 	"text/template"
-
-	"github.com/bpa/aoc-runner/language"
 )
 
-func WriteDayTemplate(lang language.Language, year int, day int) error {
+func WriteDayTemplate(lang Language, year int, day int) error {
 	tmplDir := filepath.Join("..", "templates")
-	tmplFile := filepath.Join(tmplDir, fmt.Sprintf("template.%s", lang.Ext()))
+	tmplFile := filepath.Join(tmplDir, fmt.Sprintf("template.%s", lang.Ext))
 	if _, err := os.Stat(tmplFile); os.IsNotExist(err) {
 		return fmt.Errorf("template not found: %s", tmplFile)
 	}
 
-	if err := os.MkdirAll(lang.WorkDir(), 0o755); err != nil {
+	if err := os.MkdirAll(lang.WorkDir, 0o755); err != nil {
 		return err
 	}
-	dest := filepath.Join(lang.WorkDir(), fmt.Sprintf("day%d.%s", day, lang.Ext()))
+	dest := filepath.Join(lang.WorkDir, fmt.Sprintf("day%d.%s", day, lang.Ext))
 	if _, err := os.Stat(dest); err == nil {
 		return nil // already exists
 	}

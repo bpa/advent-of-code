@@ -7,8 +7,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-
-	"github.com/bpa/aoc-runner/language"
 )
 
 func main() {
@@ -40,7 +38,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "   or: %s -lang <language> [-day <day>]\n\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "Running from year directory: %d\n\n", year)
 		fmt.Println("Available languages:")
-		for name := range language.Languages {
+		for name := range Languages {
 			fmt.Printf(" - %s\n", name)
 		}
 		return
@@ -58,7 +56,7 @@ func main() {
 
 	if strings.TrimSpace(*lang) == "" {
 		fmt.Println("Available languages:")
-		for name := range language.Languages {
+		for name := range Languages {
 			fmt.Printf(" - %s\n", name)
 		}
 		return
@@ -70,19 +68,17 @@ func main() {
 		os.Exit(2)
 	}
 
-	var chosen language.Language
 	want := strings.ToLower(*lang)
-	if r, ok := language.Languages[want]; ok {
-		chosen = r
-	}
-	if chosen == nil {
+	r, ok := Languages[want]
+	if !ok {
 		fmt.Fprintf(os.Stderr, "unknown language: %s\n", *lang)
 		fmt.Println("Available languages:")
-		for name := range language.Languages {
+		for name := range Languages {
 			fmt.Printf(" - %s\n", name)
 		}
 		return
 	}
+	chosen := r(year, *day)
 
 	if err := WriteDayTemplate(chosen, year, *day); err != nil {
 		fmt.Fprintf(os.Stderr, "error preparing template: %v\n", err)

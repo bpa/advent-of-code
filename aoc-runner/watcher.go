@@ -11,11 +11,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/bpa/aoc-runner/language"
 	"github.com/fsnotify/fsnotify"
 )
 
 func RunCommand(name string, args, env []string) error {
+	fmt.Printf("%s %v\n", name, args)
 	cmd := exec.Command(name, args...)
 	cmd.Env = env
 	cmd.Stdout = os.Stdout
@@ -24,27 +24,24 @@ func RunCommand(name string, args, env []string) error {
 	return cmd.Run()
 }
 
-func StartWatcher(lang language.Language, year int, day int) {
-	workDir := lang.WorkDir()
-	if err := os.Chdir(workDir); err != nil {
-		fmt.Fprintf(os.Stderr, "error changing to working directory %s: %v\n", workDir, err)
+func StartWatcher(lang Language, year int, day int) {
+	if err := os.Chdir(lang.WorkDir); err != nil {
+		fmt.Fprintf(os.Stderr, "error changing to working directory %s: %v\n", lang.WorkDir, err)
 		os.Exit(1)
 	}
 
 	var paths []string
-	realInput := filepath.Join("..", "input", fmt.Sprintf("day%d.txt", day))
-	testInput := filepath.Join("..", "input", fmt.Sprintf("day%d.test", day))
-	paths = append(paths, realInput, testInput)
-	paths = append(paths, lang.WatchPaths(day)...)
+	paths = append(paths, lang.TestFile, lang.RunFile)
+	paths = append(paths, lang.WatchPaths...)
 
 	stop, err := StartWatch(paths, func() {
 		clearScreen()
 
-		if info, err := os.Stat(testInput); err == nil && info.Size() > 0 {
-			RunCommand(lang.Cmd(), lang.TestArgs(day, testInput), lang.TestEnv())
+		if info, err := os.Stat(lang.TestFile); err == nil && info.Size() > 0 {
+			RunCommand(lang.Cmd, lang.TestArgs, lang.TestEnv)
 			fmt.Println("-----")
 		}
-		RunCommand(lang.Cmd(), lang.RunArgs(day, realInput), lang.RunEnv())
+		RunCommand(lang.Cmd, lang.RunArgs, lang.RunEnv)
 	})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "watcher start error: %v\n", err)
