@@ -35,7 +35,7 @@ def part1(input: str):
             dx = j[0] - x
             dy = j[1] - y
             dz = j[2] - z
-            dist = sqrt(dx * dx + dy * dy + dz * dz)
+            dist = dx * dx + dy * dy + dz * dz
             heappush(distances, (dist, j, (x, y, z)))
         junctions.append((x, y, z))
     circuits = {}
@@ -44,6 +44,8 @@ def part1(input: str):
         dist, a, b = heappop(distances)
         merge(a, b, circuits, boxes) or merge(b, a, circuits, boxes) or make_new_circuit(a, b, circuits, boxes)
     boxes = sorted([len(c) for c in boxes], reverse=True)
+    if len(boxes) < 3:
+        return boxes[0]
     return boxes[0] * boxes[1] * boxes[2]
 
 
@@ -56,16 +58,16 @@ def part2(input: str):
             dx = j[0] - x
             dy = j[1] - y
             dz = j[2] - z
-            dist = sqrt(dx * dx + dy * dy + dz * dz)
-            heappush(distances, (dist, j, (x, y, z)))
+            dist = dx * dx + dy * dy + dz * dz
+            distances.append((dist, j, (x, y, z)))
         junctions.append((x, y, z))
     circuits = {}
     boxes = []
-    while True:
-        dist, a, b = heappop(distances)
+    distances.sort()
+    end = len(junctions)
+    for dist, a, b in distances:
         c = merge(a, b, circuits, boxes) or merge(b, a, circuits, boxes) or make_new_circuit(a, b, circuits, boxes)
-        debug(c)
-        if len(c) == len(junctions):
+        if len(c) == end:
             return a[0] * b[0]
     
 
