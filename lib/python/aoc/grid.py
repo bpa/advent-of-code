@@ -236,6 +236,38 @@ class Grid:
             for x in range(self.width - 1, -1, -1):
                 yield Point(self, x, y)
 
+    def fill(self, x, y, value=1):
+        queue = [(x, y)]
+        while queue:
+            x, y = queue.pop(0)
+            if self.is_valid(x, y) and self.data[y][x] == 0:
+                self.data[y][x] = value
+                queue.append((x+1, y))
+                queue.append((x-1, y))
+                queue.append((x, y+1))
+                queue.append((x, y-1))
+
+    def sum_table(self):
+        table = Grid.of(self.width, self.height, 0)
+        x_sum = self.data[0][0]
+        table.data[0][0] = x_sum
+        for x in range(1, table.width):
+            x_sum += self.data[0][x]
+            table.data[0][x] = x_sum
+        y_sum = self.data[0][0]
+        for y in range(1, table.height):
+            y_sum += self.data[y][0]
+            table.data[y][0] = y_sum
+        for y in range(1, table.height):
+            for x in range(1, table.width):
+                table.data[y][x] = (
+                    self.data[y][x]
+                    + table.data[y - 1][x]
+                    + table.data[y][x - 1]
+                    - table.data[y - 1][x - 1]
+                )
+        return table
+
     def __str__(self):
         return self.to_string()
 

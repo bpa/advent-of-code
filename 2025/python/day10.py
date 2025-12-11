@@ -56,9 +56,10 @@ def part2(input: str):
     total = 0
     for machine in input.splitlines():
       parts = machine.split()
-      target = [int(b) for b in parts[-1][1:-1].split(',')]
+      target = tuple([int(b) for b in parts[-1][1:-1].split(',')])
       buttons = [button_to_array(b, len(target)) for b in parts[1:-1]]
       queue = [(0, target)]
+      seen = {target}
       while queue:
          depth, state = heappop(queue)
          depth += 1
@@ -79,7 +80,13 @@ def part2(input: str):
             if too_many:
                continue
 
+            # next = tuple(next)
+            # if next in seen:
+            #    continue
+            # seen.add(next)
+
             if found:
+               debug("Found target:", next)
                total += depth
                queue.clear()
                break
