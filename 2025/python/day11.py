@@ -49,7 +49,6 @@ def find_paths(start: str, end: str, nodes: dict[str, Node]) -> int:
     return nodes[end].paths
 
 def part1(input: str):
-    return 0
     nodes = parse_input(input)
     return find_paths('you', 'out', nodes)
 
@@ -58,17 +57,12 @@ def part2(input: str):
     nodes = parse_input(input)
     dac = find_paths('svr', 'dac', nodes)
     fft = nodes['fft'].paths
-    print(f"Paths to DAC: {dac}, Paths to FFT: {fft}")
     if dac < fft:
         middle = find_paths('dac', 'fft', nodes)
-        print(f"Paths from DAC to FFT: {middle}")
         return dac * middle * find_paths('fft', 'out', nodes)
     else:
         middle = find_paths('fft', 'dac', nodes)
-        print(f"Paths from FFT to DAC: {middle}")
-        print(find_paths('dac', 'out', nodes))
-        return dac * middle * find_paths('dac', 'out', nodes)
+        return fft * middle * find_paths('dac', 'out', nodes)
 
-# 207000528761440412149500
 if __name__ == '__main__':
     main()

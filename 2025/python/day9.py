@@ -15,49 +15,39 @@ def part1(input: str):
         tiles.append((x, y))
     return farthest
 
-def is_clear(t, i, j, x1, x2, y1, y2, tiles):
-    for k, (x, y) in enumerate(tiles):
-        if k == i or k == j:
-            continue
-        if x1 < x < x2 and y1 < y < y2:
-            l = abs(i - k)
-            m = abs(j - k)
-            if l != 1 and m != 1 and l != t and m != t:
-                return False
-    return True
-
 def part2(input: str):
     tiles = []
+    last_x = 0
+    y0 = 1_000_000_000
+    y1 = 0
     for line in input.splitlines():
         x, y = line.split(',')
         x, y = int(x), int(y)
         tiles.append((x, y))
+        if last_x > 0 and abs(x - last_x) > 5000:
+            y0 = min(y0, y)
+            y1 = max(y1, y)
+            print(abs(x-last_x), last_x, x,y)
+        last_x = x
+    print(y0, y1)
+        
     max_size = 0
-    ys = set()
-    t = len(tiles) - 1
-    last_y = 0
-    y_count = 0
-    max_d = 0
-    max_i = 0
-    for i, j in itertools.batched(tiles, 2):
-        d = abs(i[0] - j[0]) + abs(i[1] - j[1])
-        if d > max_d:
-            max_d = d
-            max_i = tiles.index(i)
-    print("Max diff:", max_d, "at", tiles[max_i], tiles[max_i+1])
-    print("Ys:", ys)
     for i, (x, y) in enumerate(tiles[:-1]):
-        for j in range(i+1, len(tiles)):
-            a, b = tiles[j]
-            if i != 4:
-                continue
-            if is_clear(t, i, j, min(x, a), max(x, a), min(y, b), max(y, b), tiles):
-                size = (abs(x - a)+1) * (abs(y - b)+1)
-                max_size = max(max_size, size)
+        for a, b in tiles[i+1:]:
+            s = min(y, b)
+            l = max(y, b)
+            # if s < y0 < l or s < y1 < l:
+            if (s < y0 and l == y0) or (s == y1 and l > y1):
+                dist = (abs(x - a)+1) * (abs(y - b)+1)
+                if dist > max_size and dist > 2984129596:
+                    print(dist, y, b, s, l, y0, y1)
+                max_size = max(max_size, dist)
     return max_size
 
 # 4605538168
 # 173627760 - too low
+# 2996714391
+# 3043170477
 
 if __name__ == '__main__':
     main()
