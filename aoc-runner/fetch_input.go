@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 )
 
 func FetchInput(year int, day int) error {
@@ -21,6 +22,15 @@ func FetchInput(year int, day int) error {
 		if f, err := os.Create(testPath); err == nil {
 			f.Close()
 		}
+	}
+
+	// Wait until a few seconds after midnight Eastern time on the puzzle day
+	eastern, _ := time.LoadLocation("America/New_York")
+	now := time.Now().In(eastern)
+	puzzleDay := time.Date(year, time.December, day, 0, 0, 5, 0, eastern)
+	if now.Before(puzzleDay) {
+		fmt.Printf("Waiting until puzzle release at %s...\n", puzzleDay.Format("2006-01-02 15:04:05 MST"))
+		time.Sleep(puzzleDay.Sub(now))
 	}
 
 	outPath := filepath.Join(inputDir, fmt.Sprintf("day%d.txt", day))
