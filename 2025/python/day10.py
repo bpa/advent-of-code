@@ -2,7 +2,7 @@
 
 from aoc import *
 from heapq import heappop, heappush
-
+from z3 import *
 
 def machine_to_int(machine):
    value = 0
@@ -45,53 +45,28 @@ def part1(input: str):
     return total
 
 
-def button_to_array(button, length):
-   arr = [0] * length
-   for b in button[1:-1].split(','):
-      arr[int(b)] = 1
-   return arr
-   
-
 def part2(input: str):
     total = 0
     for machine in input.splitlines():
       parts = machine.split()
-      target = tuple([int(b) for b in parts[-1][1:-1].split(',')])
-      buttons = [button_to_array(b, len(target)) for b in parts[1:-1]]
-      queue = [(0, target)]
-      seen = {target}
-      while queue:
-         depth, state = heappop(queue)
-         depth += 1
-         for b in buttons:
-            next = []
-            found = True
-            too_many = True
-            for i, s in enumerate(state):
-               v = s - b[i]
-               if v < 0:
-                  break
-               if v > 0:
-                  found = False
-               next.append(v)
-            else:
-               too_many = False
-            
-            if too_many:
-               continue
+      joltages = [int(b) for b in parts[-1][1:-1].split(',')]
+      buttons = [[int(b) for b in button[1:-1].split(',')] for button in parts[1:-1]]
+      s = Solver()
+      vars = [Int(f'a{b}') for b in range(len(buttons))]
+      for v in vars:
+         s.add(v >= 0)
 
-            # next = tuple(next)
-            # if next in seen:
-            #    continue
-            # seen.add(next)
+      for i, j in enumerate(joltages):
+         jvars = [vars[k] for k, b in enumerate(buttons) if i in b]
+         s.add(Sum(jvars) == j)
 
-            if found:
-               debug("Found target:", next)
-               total += depth
-               queue.clear()
-               break
+      while s.check() == sat:
+         m = s.model()
+         n= sum([m[d].as_long() for d in m])
+         s.add(Sum(vars) < n)
 
-            heappush(queue, (depth, next))
+      total += n
+
     return total
 
 
