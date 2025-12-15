@@ -3,19 +3,19 @@ package main
 import (
 	"fmt"
 
-	"github.com/bpa/aoc/util"
+	"github.com/bpa/aoc"
 )
 
-func day${day}Part1(input string) int {
+func day{{ .Day }}Part1(input string) int {
 	return 0
 }
 
-func day${day}Part2(input string) int {
+func day{{ .Day }}Part2(input string) int {
 	return 0
 }
 
 func main() {
-	input := util.Input()
-	fmt.Printf("Part 1: %v\n", day${day}Part1(input))
-	fmt.Printf("Part 2: %v\n", day${day}Part2(input))
+	input := aoc.Input()
+	fmt.Printf("Part 1: %v\n", day{{ .Day }}Part1(input))
+	fmt.Printf("Part 2: %v\n", day{{ .Day }}Part2(input))
 }
