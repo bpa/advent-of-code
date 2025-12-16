@@ -33,7 +33,7 @@ class Grid:
         return self.data[y][x]
 
     def set(self, x, y, value):
-        """Get the element at the point, or return None"""
+        """Set the element at the point, or return None"""
         self.data[y][x] = value
 
     def adjacent_4(self, x, y):

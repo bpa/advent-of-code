@@ -35,6 +35,7 @@ func GoLang(year, day int) Language {
 		Ext:      "go",
 		TestArgs: []string{"run", "-tags=debug", fmt.Sprintf("day%d.go", day), testFile},
 		TestEnv: []string{
+			fmt.Sprintf("GOPATH=%s", os.Getenv("GOPATH")),
 			fmt.Sprintf("TMP=%s", os.Getenv("TMP")),
 			fmt.Sprintf("TEMP=%s", os.Getenv("TEMP")),
 			fmt.Sprintf("TERM=%s", os.Getenv("TERM")),
@@ -43,6 +44,7 @@ func GoLang(year, day int) Language {
 		TestFile: testFile,
 		RunArgs:  []string{"run", fmt.Sprintf("day%d.go", day), runFile},
 		RunEnv: []string{
+			fmt.Sprintf("GOPATH=%s", os.Getenv("GOPATH")),
 			fmt.Sprintf("TMP=%s", os.Getenv("TMP")),
 			fmt.Sprintf("TEMP=%s", os.Getenv("TEMP")),
 			fmt.Sprintf("TERM=%s", os.Getenv("TERM")),
@@ -65,17 +67,17 @@ func Python(year, day int) Language {
 		Cmd:      "python3",
 		Ext:      "py",
 		TestArgs: []string{fmt.Sprintf("day%d.py", day), testFile},
-		TestEnv:  []string{
-         "PYTHONPATH=../../lib/python", "DEBUG=true",
+		TestEnv: []string{
+			"PYTHONPATH=../../lib/python", "DEBUG=true",
 			fmt.Sprintf("TERM=%s", os.Getenv("TERM")),
-      },
+		},
 		TestFile: testFile,
 		RunArgs:  []string{fmt.Sprintf("day%d.py", day), runFile},
-		RunEnv:   []string{
-         "PYTHONPATH=../../lib/python",
+		RunEnv: []string{
+			"PYTHONPATH=../../lib/python",
 			fmt.Sprintf("TERM=%s", os.Getenv("TERM")),
-      },
-		RunFile:  runFile,
+		},
+		RunFile: runFile,
 		WatchPaths: []string{
 			fmt.Sprintf("day%d.py", day),
 			filepath.Join("..", "..", "lib", "python", "aoc"),
@@ -92,15 +94,15 @@ func Rust(year, day int) Language {
 		Cmd:      "cargo",
 		Ext:      "rs",
 		TestArgs: []string{"aoc", "-d", strconv.Itoa(day), "-input", filepath.Join("input", yy, fmt.Sprintf("day%d.test", day))},
-		TestEnv:  []string{
+		TestEnv: []string{
 			fmt.Sprintf("TERM=%s", os.Getenv("TERM")),
-      },
+		},
 		TestFile: testFile,
 		RunArgs:  []string{"aoc", "-d", strconv.Itoa(day), "-input", filepath.Join("input", yy, fmt.Sprintf("day%d.txt", day))},
-		RunEnv:   []string{
+		RunEnv: []string{
 			fmt.Sprintf("TERM=%s", os.Getenv("TERM")),
-      },
-		RunFile:  runFile,
+		},
+		RunFile: runFile,
 		WatchPaths: []string{
 			".",
 			filepath.Join("..", "lib", "rust"),
