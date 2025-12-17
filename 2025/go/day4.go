@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/bpa/aoc"
 	"github.com/gammazero/deque"
 )
@@ -75,7 +73,5 @@ func day4Part2(input string) int {
 }
 
 func main() {
-	input := aoc.Input()
-	fmt.Printf("Part 1: %v\n", day4Part1(input))
-	fmt.Printf("Part 2: %v\n", day4Part2(input))
+	aoc.Main(day4Part1, day4Part2)
 }

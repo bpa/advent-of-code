@@ -11,14 +11,6 @@ import (
 	"strings"
 )
 
-func lines() []string {
-	data, err := os.ReadFile(os.Args[1])
-	if err != nil {
-		panic(err)
-	}
-	return strings.Split(string(data), "\n")
-}
-
 func ToInt(a string) int {
 	if v, err := strconv.Atoi(strings.TrimSpace(a)); err == nil {
 		return v

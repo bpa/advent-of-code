@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/bpa/aoc"
@@ -56,7 +55,5 @@ func day1Part2(input string) int {
 }
 
 func main() {
-	input := aoc.Input()
-	fmt.Printf("Part 1: %v\n", day1Part1(input))
-	fmt.Printf("Part 2: %v\n", day1Part2(input))
+	aoc.Main(day1Part1, day1Part2)
 }

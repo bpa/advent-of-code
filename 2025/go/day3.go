@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/bpa/aoc"
 )
@@ -38,6 +39,8 @@ func solveDay3(input string, banks int) int {
 
 func main() {
 	input := aoc.Input()
-	fmt.Printf("Part 1: %v\n", solveDay3(input, 2))
-	fmt.Printf("Part 2: %v\n", solveDay3(input, 12))
+	s := time.Now()
+	fmt.Printf("Part 1: %v (%v)\n", solveDay3(input, 2), time.Since(s))
+	s = time.Now()
+	fmt.Printf("Part 2: %v (%v)\n", solveDay3(input, 12), time.Since(s))
 }
