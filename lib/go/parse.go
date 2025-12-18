@@ -20,3 +20,30 @@ func Delimited(input string, delimiter ...string) [][]string {
 	}
 	return grid
 }
+
+func Lines(input string) []string {
+	s := input
+	separator := 0
+	var line string
+	if i := strings.IndexByte(s, '\n'); i >= 0 {
+		line, s = s[:i], s[i+1:]
+		l := len(line)
+		if line[l-1] == '\r' {
+			separator = 1
+			line = line[:l-1]
+		}
+	} else {
+		line, s = s, ""
+	}
+
+	lines := make([]string, 0, 1024)
+	for len(s) > 0 {
+		lines = append(lines, line)
+		if i := strings.IndexByte(s, '\n'); i >= 0 {
+			line, s = s[:i-separator], s[i+1:]
+		} else {
+			line, s = s, ""
+		}
+	}
+	return append(lines, line)
+}
