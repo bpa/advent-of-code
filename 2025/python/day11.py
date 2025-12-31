@@ -9,7 +9,6 @@ class Node:
     inputs: list[str]
     outputs: list[str]
     paths: int
-    depth: int
 
 def parse_input(input: str) -> dict[str, Node]:
     nodes = {}
