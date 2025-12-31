@@ -3,6 +3,8 @@
 
 package main
 
+const newline = "\r\n"
+
 func clearScreen() {
 	RunCommand("cmd", []string{"/c", "cls"}, []string{})
 }

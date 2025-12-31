@@ -25,7 +25,7 @@ func RunCommand(name string, args, env []string) error {
 
 func StartWatcher(lang Language, year int, day int) {
 	if err := os.Chdir(lang.WorkDir); err != nil {
-		fmt.Fprintf(os.Stderr, "error changing to working directory %s: %v\n", lang.WorkDir, err)
+		fmt.Fprintf(os.Stderr, "error changing to working directory %s: %v%s", lang.WorkDir, err, newline)
 		os.Exit(1)
 	}
 
@@ -38,12 +38,12 @@ func StartWatcher(lang Language, year int, day int) {
 
 		if info, err := os.Stat(lang.TestFile); err == nil && info.Size() > 0 {
 			RunCommand(lang.Cmd, lang.TestArgs, lang.TestEnv)
-			fmt.Println("-----\r")
+			fmt.Printf("-----%s", newline)
 		}
 		RunCommand(lang.Cmd, lang.RunArgs, lang.RunEnv)
 	})
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "watcher start error: %v\n", err)
+		fmt.Fprintf(os.Stderr, "watcher start error: %v%s", err, newline)
 		os.Exit(1)
 	}
 

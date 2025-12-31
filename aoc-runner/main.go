@@ -16,30 +16,30 @@ func main() {
 
 	cwd, err := os.Getwd()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error getting current working directory: %v\n", err)
+		fmt.Fprintf(os.Stderr, "error getting current working directory: %v%s", err, newline)
 		os.Exit(1)
 	}
 	dirName := filepath.Base(cwd)
 
 	if len(dirName) != 4 || !strings.HasPrefix(dirName, "20") {
-		fmt.Fprintf(os.Stderr, "error: directory must be a year starting with 20 (e.g., 2025)\n")
-		fmt.Fprintf(os.Stderr, "current directory: %s\n", dirName)
+		fmt.Fprintf(os.Stderr, "error: directory must be a year starting with 20 (e.g., 2025)%s", newline)
+		fmt.Fprintf(os.Stderr, "current directory: %s%s", dirName, newline)
 		os.Exit(1)
 	}
 
 	year, err := strconv.Atoi(dirName)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: could not parse year from directory name: %v\n", err)
+		fmt.Fprintf(os.Stderr, "error: could not parse year from directory name: %v%s", err, newline)
 		os.Exit(1)
 	}
 
 	if len(os.Args) == 1 {
-		fmt.Fprintf(os.Stderr, "Usage: %s <lang> <day>\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "   or: %s -lang <language> [-day <day>]\n\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "Running from year directory: %d\n\n", year)
+		fmt.Fprintf(os.Stderr, "Usage: %s <lang> <day>%s", os.Args[0], newline)
+		fmt.Fprintf(os.Stderr, "   or: %s -lang <language> [-day <day>]%s%s", newline, os.Args[0], newline)
+		fmt.Fprintf(os.Stderr, "Running from year directory: %d%s%s", year, newline, newline)
 		fmt.Println("Available languages:")
 		for name := range Languages {
-			fmt.Printf(" - %s\n", name)
+			fmt.Printf(" - %s%s", name, newline)
 		}
 		return
 	}
@@ -57,36 +57,36 @@ func main() {
 	if strings.TrimSpace(*lang) == "" {
 		fmt.Println("Available languages:")
 		for name := range Languages {
-			fmt.Printf(" - %s\n", name)
+			fmt.Printf(" - %s%s", name, newline)
 		}
 		return
 	}
 
 	if *day <= 0 {
-		fmt.Fprintf(os.Stderr, "error: day is required\n")
-		fmt.Fprintf(os.Stderr, "Usage: %s <lang> <day>\n   or: %s -lang <language> -day <day>\n", os.Args[0], os.Args[0])
+		fmt.Fprintf(os.Stderr, "error: day is required%s", newline)
+		fmt.Fprintf(os.Stderr, "Usage: %s <lang> <day>%s   or: %s -lang <language> -day <day>%s", os.Args[0], newline, os.Args[0], newline)
 		os.Exit(2)
 	}
 
 	want := strings.ToLower(*lang)
 	r, ok := Languages[want]
 	if !ok {
-		fmt.Fprintf(os.Stderr, "unknown language: %s\n", *lang)
+		fmt.Fprintf(os.Stderr, "unknown language: %s%s", *lang, newline)
 		fmt.Println("Available languages:")
 		for name := range Languages {
-			fmt.Printf(" - %s\n", name)
+			fmt.Printf(" - %s%s", name, newline)
 		}
 		return
 	}
 	chosen := r(year, *day)
 
 	if err := WriteDayTemplate(chosen, year, *day); err != nil {
-		fmt.Fprintf(os.Stderr, "error preparing template: %v\n", err)
+		fmt.Fprintf(os.Stderr, "error preparing template: %v%s", err, newline)
 		os.Exit(1)
 	}
 
 	if err := FetchInput(year, *day); err != nil {
-		fmt.Fprintf(os.Stderr, "error fetching input: %v\n", err)
+		fmt.Fprintf(os.Stderr, "error fetching input: %v%s", err, newline)
 		os.Exit(1)
 	}
 

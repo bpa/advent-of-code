@@ -15,5 +15,5 @@ func timeSolution[T interface{}](part int, input string, fn func(string) T) {
 	s := time.Now()
 	answer := fn(input)
 	d1 := time.Since(s)
-	fmt.Printf("Part %d: %v (%s)\n", part, answer, d1)
+	fmt.Printf("Part %d: %v (%s)%s", part, answer, d1, newline)
 }
